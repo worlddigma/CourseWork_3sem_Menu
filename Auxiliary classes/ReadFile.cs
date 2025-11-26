@@ -9,7 +9,7 @@ namespace CourseWork_3sem
     public static class ReadFile
     {
         public static void Read(BusFleet busFleet, DriverStaff driverStaff,
-            RouteCollection routeCollection, VolumeOfTransportation volumeOfTransportation)
+        RouteCollection routeCollection, VolumeOfTransportation volumeOfTransportation)
         {
             try
             {
@@ -22,11 +22,13 @@ namespace CourseWork_3sem
                 string RouteCollectionPath = Path.Combine(directory, "Route collection.txt");
                 string VolumeOfTransportationPath = Path.Combine(directory, "Volume of transportation.txt");
 
-                if (!File.Exists(BusFleetPath)) File.Create(BusFleetPath);
-                if (!File.Exists(DriverStaffPath)) File.Create(DriverStaffPath);
-                if (!File.Exists(RouteCollectionPath)) File.Create(RouteCollectionPath);
-                if (!File.Exists(VolumeOfTransportationPath)) File.Create(VolumeOfTransportationPath);
+                // Корректное создание файлов
+                CreateFileIfNotExists(BusFleetPath);
+                CreateFileIfNotExists(DriverStaffPath);
+                CreateFileIfNotExists(RouteCollectionPath);
+                CreateFileIfNotExists(VolumeOfTransportationPath);
 
+                // Чтение BusFleet
                 using (StreamReader BusFleetRead = new(BusFleetPath))
                 {
                     string line;
@@ -38,23 +40,25 @@ namespace CourseWork_3sem
                         }
                     }
                 }
-                using (StreamReader DriverStaff = new(DriverStaffPath))
+
+                // Чтение DriverStaff
+                using (StreamReader DriverStaffRead = new(DriverStaffPath))
                 {
                     string line;
-                    while ((line = DriverStaff.ReadLine()) != null)
+                    while ((line = DriverStaffRead.ReadLine()) != null)
                     {
                         if (!string.IsNullOrWhiteSpace(line))
                         {
                             driverStaff.Add(line);
                         }
-
                     }
                 }
 
-                using (StreamReader RouteCollection = new(RouteCollectionPath))
+                // Чтение RouteCollection
+                using (StreamReader RouteCollectionRead = new(RouteCollectionPath))
                 {
                     string line;
-                    while ((line = RouteCollection.ReadLine()) != null)
+                    while ((line = RouteCollectionRead.ReadLine()) != null)
                     {
                         if (!string.IsNullOrWhiteSpace(line))
                         {
@@ -62,25 +66,37 @@ namespace CourseWork_3sem
                         }
                     }
                 }
-                using (StreamReader VolumeOfTransportation = new(VolumeOfTransportationPath))
+
+                // Чтение VolumeOfTransportation
+                using (StreamReader VolumeOfTransportationRead = new(VolumeOfTransportationPath))
                 {
-                    string text;
-                    while ((text = VolumeOfTransportation.ReadToEnd()) != "")
+                    string text = VolumeOfTransportationRead.ReadToEnd();
+                    if (!string.IsNullOrWhiteSpace(text))
                     {
-                        if (!string.IsNullOrWhiteSpace(text))
+                        string[] lines = text.Split('[', StringSplitOptions.RemoveEmptyEntries);
+                        foreach (var line in lines)
                         {
-                            string[] line = text.Split('[');
-                            foreach (var one in line)
+                            if (!string.IsNullOrWhiteSpace(line.Trim()))
                             {
-                                volumeOfTransportation.Add(one, busFleet, driverStaff, routeCollection);
+                                volumeOfTransportation.Add(line.Trim(), busFleet, driverStaff, routeCollection);
                             }
                         }
                     }
                 }
-
-
             }
-            catch (Exception ex) { }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при чтении файлов: {ex.Message}");
+                // Или используйте MessageBox для WinForms
+                // MessageBox.Show($"Ошибка при чтении файлов: {ex.Message}", "Ошибка");
+            }
+        }
+
+        private static void CreateFileIfNotExists(string filePath)
+        {
+            if (!File.Exists(filePath))
+            {
+                using (File.Create(filePath)) { }
+            }
         }
     }
-}
