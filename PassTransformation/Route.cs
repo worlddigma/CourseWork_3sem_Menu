@@ -122,17 +122,6 @@ namespace CourseWork_3sem
     $"\n|--Время отправления: {DepartureTime:HH:mm}" +
     $"\n|--Дни отправления: {string.Join(", ", DaysToRussian(DepartureDays))}" +
     $"\n|--Время в пути: {TransportationTime}";
-
-
-        public string ToEdit() =>
-    $"Маршрут" +
-    $"\n1.Шифр маршрута: {Code}" +
-    $"\n2. Начальный пункт: {StartingPoint}" +
-    $"\n3. Конечный пункт: {EndingPoint}" +
-    $"\n4. Промежуточные пункты: {(IntermediatePoints.Count > 0 ? string.Join(" → ", _IntermediatePoints) : "отсутствуют")}" +
-    $"\n5. Время отправления: {DepartureTime:HH:mm}" +
-    $"\n6. Дни отправления: {string.Join(", ", DaysToRussian(DepartureDays))}" +
-    $"\n7. Время в пути: {TransportationTime}";
         private static string[] DaysToRussian(List<DayOfWeek> departureDays)
         {
             if (departureDays == null || departureDays.Count == 0)

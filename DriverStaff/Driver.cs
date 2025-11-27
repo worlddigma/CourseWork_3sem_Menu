@@ -99,34 +99,6 @@ namespace CourseWork_3sem
             Class = driverClass;
         }
 
-        public static Class WhichClass(int workExperince)
-        {
-            if (workExperince < 0)
-                throw new ArgumentException("Опыт работы не может быть отрицательным.");
-
-            if (workExperince == 0) return Class.Class3;
-
-            Console.Write("Имеет ли водитель нарушения ПДД?(да или нет): ");
-            string input = Console.ReadLine() ?? "";
-
-            if (string.IsNullOrEmpty(input))
-                throw new ArgumentException("Ответ не может быть пустым");
-
-            if (!input.Equals("да", StringComparison.OrdinalIgnoreCase) &&
-                !input.Equals("нет", StringComparison.OrdinalIgnoreCase))
-                throw new ArgumentException("Неверно введено значение. Ожидается 'да' или 'нет'. ");
-
-            if (workExperince < 5)
-            {
-                if (input.Equals("да", StringComparison.OrdinalIgnoreCase)) return Class.Class3;
-                else return Class.Class2;
-            }
-            else
-            {
-                if (input.Equals("да", StringComparison.OrdinalIgnoreCase)) return Class.Class2;
-                else return Class.Class1;
-            }
-        }
         public override string ToString() =>
             $"Водитель" +
             $"\n|--ФИО: {Name}" +
@@ -213,15 +185,6 @@ namespace CourseWork_3sem
             if (!Enum.IsDefined(typeof(Class), driverClass))
                 throw new ArgumentException($"Недопустимый класс водителя: {(int)driverClass}. Допустимые значения: 1, 2, 3");
         }
-
-        public string ToEdit() =>
-            $"Водитель" +
-            $"\n1. ФИО: {Name}" +
-            $"\n2. Табельный номер: {Id}" +
-            $"\n3. Дата рождения: {DateOfBirth:dd.MM.yyyy} (Возраст: {CalculateAge()} лет)" +
-            $"\n4. Опыт работы: {WorkExperience}" +
-            $"\n5. Категория прав: {Category}" +
-            $"\n6. Классность: {(int)Class}";
     }
 }
 

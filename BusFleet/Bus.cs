@@ -146,12 +146,6 @@ namespace CourseWork_3sem
             $"\n|--Пробег на начало текущего года({DateTime.Now.Year}): {Mileage}" +
             $"\n|--Фото: {Photo}";
 
-        public string ToEdit() =>
-            $"Автобус" +
-            $"\n1. Год капитального ремонта: {YearOfMajorRepair}" +
-            $"\n2. Пробег на начало текущего года({DateTime.Now.Year}): {Mileage}" +
-            $"\n3. Фото: {Photo}";
-
 
         public static void IsValidStateNumber(string stateNumber)
         {
