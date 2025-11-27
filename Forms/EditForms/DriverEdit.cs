@@ -32,7 +32,7 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
             if (driver.Class == Class.Class1) _Class = Class.Class1;
             if (driver.Class == Class.Class2) _Class = Class.Class2;
             if (driver.Class == Class.Class3) _Class = Class.Class3;
-
+            _Driver = driver;
         }
 
         public DriverEdit(DriverStaff driverStaff, FormDrivers parent)
@@ -40,6 +40,7 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
             InitializeComponent();
             _DriverStaff = driverStaff;
             parentForm = parent;
+            _Driver = null;
         }
 
 
@@ -267,6 +268,7 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
             // Сброс класса водителя
             _Class = Class.Class3; // или значение по умолчанию
 
+            _Driver = null;
             // Установка фокуса на первое поле
             textBoxName.Focus();
         }

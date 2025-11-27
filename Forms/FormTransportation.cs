@@ -70,7 +70,7 @@ namespace CourseWork_3sem_Menu.Forms
             Label specsLabel = new Label
             {
                 Text = completedTransportation.ToString(),
-                Location = new Point(11, yPosition),
+                Location = new Point(5, yPosition-10),
                 AutoSize = true,
                 Font = new Font("Arial", 9)
             };

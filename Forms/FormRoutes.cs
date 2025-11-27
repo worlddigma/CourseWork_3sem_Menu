@@ -47,6 +47,7 @@ namespace CourseWork_3sem_Menu.Forms
         }
         public Panel CreateRoutePanel(Route route, int yPosition)
         {
+
             // Создаем новую панель для каждого автобуса
             Panel panel = new Panel
             {
@@ -62,9 +63,10 @@ namespace CourseWork_3sem_Menu.Forms
             Label specsLabel = new Label
             {
                 Text = route.ToString(),
-                Location = new Point(11, yPosition),
+                Location = new Point(11, 11),
                 AutoSize = true,
-                Font = new Font("Arial", 9)
+                Font = new Font("Arial", 9),
+                Anchor = AnchorStyles.Left
             };
 
             // Кнопка редактирования

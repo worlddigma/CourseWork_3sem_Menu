@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -16,10 +17,12 @@ namespace CourseWork_3sem_Menu.Forms
     {
         private DriverStaff _DriverStaff;
         private Form ActiveForm;
-        public FormDrivers(DriverStaff driverStaff)
+        private VolumeOfTransportation _VolumeOfTransportation;
+        public FormDrivers(DriverStaff driverStaff, VolumeOfTransportation volumeOfTransportation)
         {
             InitializeComponent();
             _DriverStaff = driverStaff;
+           _VolumeOfTransportation = volumeOfTransportation;
             LoadDriverStaff();
         }
         public void LoadDriverStaff()
@@ -62,7 +65,7 @@ namespace CourseWork_3sem_Menu.Forms
             Label specsLabel = new Label
             {
                 Text = driver.ToString(),
-                Location = new Point(10, yPosition),
+                Location = new Point(10, 10),
                 AutoSize = true,
                 Font = new Font("Arial", 9)
             };
@@ -102,14 +105,32 @@ namespace CourseWork_3sem_Menu.Forms
 
         private void DeleteDriver(Driver driver)
         {
+            List<string> delTrans = new List<string>();
+            List<CompletedTransportation> toDelete = [];
+            if (_VolumeOfTransportation.CompletedTransportations.Count != 0)
+            {
+                foreach (var toDel in _VolumeOfTransportation.CompletedTransportations)
+                {
+                    if (Bus.Equals(toDel.DriverCode, driver))
+                    {
+                        toDelete.Add(toDel);
+                    }
+                }
+                foreach (var del in toDelete)
+                {
+                    delTrans.Add(del.TransportationDate.ToString());
+                }
+            }
             DialogResult result = MessageBox.Show(
-                $"Вы уверены, что хотите удалить водителя {driver.Id}?",
+                $"Вы уверены, что хотите удалить водителя {driver.Id}?" +
+                $"{(delTrans.Count == 0 ? $"Будут также удалены рейсы: {string.Join(", ", delTrans)}" : "")}",
                 "Подтверждение удаления",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
             {
+                if (delTrans.Count != 0) foreach (var del in toDelete) _VolumeOfTransportation.CompletedTransportations.Remove(del);
                 _DriverStaff.Drivers.Remove(driver);
                 LoadDriverStaff(); // Обновляем список
                 MessageBox.Show("Водитель успешно удален", "Успех",
