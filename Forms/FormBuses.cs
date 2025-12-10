@@ -53,6 +53,7 @@ namespace CourseWork_3sem_Menu.Forms
             {
                 Size = new Size(panelBusesList.Width - 25, 120),
                 Location = new Point(10, yPosition),
+                AutoSize = true,
                 BackColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
                 Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top,
@@ -97,6 +98,7 @@ namespace CourseWork_3sem_Menu.Forms
                 BackColor = Color.DarkGray,
                 ForeColor = Color.White,
                 Anchor = AnchorStyles.Right,
+                AutoSize = true,
                 Tag = bus
 
             };

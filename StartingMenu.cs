@@ -100,7 +100,7 @@ namespace CourseWork_3sem_Menu
 
         private void buttonDrivers_Click(object sender, EventArgs e)
         {
-            OpenChildForm(new Forms.FormDrivers(_DriverStaff), sender);
+            OpenChildForm(new Forms.FormDrivers(_DriverStaff, _VolumeOfTransportation), sender);
         }
 
         private void buttonTransportation_Click(object sender, EventArgs e)

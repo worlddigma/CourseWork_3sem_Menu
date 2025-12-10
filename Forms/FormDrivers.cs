@@ -55,6 +55,7 @@ namespace CourseWork_3sem_Menu.Forms
             {
                 Size = new Size(panelDriversList.Width - 25, 120),
                 Location = new Point(10, yPosition),
+                AutoSize = true,
                 BackColor = Color.White,
                 Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top,
                 BorderStyle = BorderStyle.FixedSingle,
@@ -65,9 +66,10 @@ namespace CourseWork_3sem_Menu.Forms
             Label specsLabel = new Label
             {
                 Text = driver.ToString(),
-                Location = new Point(10, 10),
+                Location = new Point(0,0),
                 AutoSize = true,
-                Font = new Font("Arial", 9)
+                Font = new Font("Arial", 9),
+                Anchor = AnchorStyles.Left | AnchorStyles.Right
             };
 
             // Кнопка редактирования
@@ -78,6 +80,7 @@ namespace CourseWork_3sem_Menu.Forms
                 Location = new Point(panel.Width - 220, 80),
                 Anchor = AnchorStyles.Right,
                 BackColor = Color.DarkGray,
+                AutoSize = true,
                 ForeColor = Color.White,
                 Tag = driver
             };

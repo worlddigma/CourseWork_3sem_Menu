@@ -60,8 +60,15 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
                 Size = new Size(800, 396),
                 TabIndex = 2
             };
+            var toChoose = _RouteCollection.DeepCopy();
 
-            if (_RouteCollection.Routes == null || _RouteCollection.Routes.Count == 0)
+            List<Route> toDelete = [];
+            foreach (var route in toChoose.Routes)
+            {
+                if (!route.DepartureDays.Contains(dateTimePickerDateOfTransportation.Value.DayOfWeek)) toDelete.Add(route); // Проверка совпадения дня недели рейса и дней когда выполняется маршрут
+            }
+            foreach (var del in toDelete) toChoose.Routes.Remove(del);
+            if (toChoose.Routes == null || toChoose.Routes.Count == 0)
             {
                 Label labelNoRoutes = new Label
                 {
@@ -94,14 +101,7 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
 
             int yPosition = 10; // Начальная позиция
 
-            var toChoose = _RouteCollection.DeepCopy();
-
-            List<Route> toDelete = [];
-            foreach (var route in toChoose.Routes)
-            {
-                if (!route.DepartureDays.Contains(dateTimePickerDateOfTransportation.Value.DayOfWeek)) toDelete.Add(route); // Проверка совпадения дня недели рейса и дней когда выполняется маршрут
-            }
-            foreach (var del in toDelete) toChoose.Routes.Remove(del);
+            
             foreach (var route in toChoose.Routes)
             {
                 Panel routePanel = CreatePanel(route, yPosition, panelRoutesList, ChooseButton_Click);
@@ -159,6 +159,7 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
                 Location = new Point(10, yPosition),
                 BackColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
+                AutoSize = true,
                 Tag = item // Сохраняем ссылку
             };
 
@@ -174,7 +175,7 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
             // Кнопка выбора
             System.Windows.Forms.Button ChooseButton = new System.Windows.Forms.Button
             {
-                Text = "Удалить",
+                Text = "Выбрать",
                 Size = new Size(100, 30),
                 Location = new Point(panel.Width - 110, 80),
                 Anchor = AnchorStyles.Right,

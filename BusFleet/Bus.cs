@@ -143,8 +143,7 @@ namespace CourseWork_3sem
             $"\n|--Вместимость: {Capacity}" +
             $"\n|--Год выпуска: {Year}" +
             $"\n|--Год капитального ремонта: {YearOfMajorRepair}" +
-            $"\n|--Пробег на начало текущего года({DateTime.Now.Year}): {Mileage}" +
-            $"\n|--Фото: {Photo}";
+            $"\n|--Пробег на начало текущего года({DateTime.Now.Year}): {Mileage}";
 
 
         public static void IsValidStateNumber(string stateNumber)

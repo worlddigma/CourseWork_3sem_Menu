@@ -53,6 +53,7 @@ namespace CourseWork_3sem_Menu.Forms
             {
                 Size = new Size(panelRoutesList.Width - 25, 120),
                 Location = new Point(10, yPosition),
+                AutoSize = true,
                 Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top,
                 BackColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
@@ -63,10 +64,10 @@ namespace CourseWork_3sem_Menu.Forms
             Label specsLabel = new Label
             {
                 Text = route.ToString(),
-                Location = new Point(11, 11),
+                Location = new Point(0, 0),
                 AutoSize = true,
                 Font = new Font("Arial", 9),
-                Anchor = AnchorStyles.Left
+                Anchor = AnchorStyles.Left | AnchorStyles.Top
             };
 
             // Кнопка редактирования
@@ -74,6 +75,7 @@ namespace CourseWork_3sem_Menu.Forms
             {
                 Text = "Редактировать",
                 Size = new Size(110, 30),
+                AutoSize = true,
                 Location = new Point(panel.Width - 220, 80),
                 Anchor = AnchorStyles.Right,
                 BackColor = Color.DarkGray,

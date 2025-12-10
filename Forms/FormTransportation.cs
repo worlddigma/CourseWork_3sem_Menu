@@ -62,6 +62,7 @@ namespace CourseWork_3sem_Menu.Forms
                 Location = new Point(10, yPosition),
                 Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top,
                 BackColor = Color.White,
+                AutoSize = true,
                 BorderStyle = BorderStyle.FixedSingle,
                 Tag = completedTransportation // Сохраняем ссылку 
             };
