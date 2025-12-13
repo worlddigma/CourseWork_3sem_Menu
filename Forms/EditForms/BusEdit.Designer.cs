@@ -61,8 +61,7 @@
             labelState.Name = "labelState";
             labelState.Size = new Size(154, 17);
             labelState.TabIndex = 7;
-            labelState.Text = "Государственный номер";
-            labelState.Click += labelBusName_Click;
+            labelState.Text = "Государственный номер";;
             // 
             // pictureBoxBusImage
             // 
@@ -132,7 +131,6 @@
             labelBrand.Size = new Size(44, 17);
             labelBrand.TabIndex = 14;
             labelBrand.Text = "Бренд";
-            labelBrand.Click += label1_Click;
             // 
             // buttonSaveChanges
             // 
@@ -286,7 +284,6 @@
             panel1.Name = "panel1";
             panel1.Size = new Size(784, 450);
             panel1.TabIndex = 28;
-            panel1.Paint += panel1_Paint;
             // 
             // BusEdit
             // 

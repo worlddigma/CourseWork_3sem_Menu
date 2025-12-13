@@ -295,15 +295,5 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
                 }
             }
         }
-
-        private void checkedListBoxCategory_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBoxName_TextChanged(object sender, EventArgs e)
-        {
-
-        }
     }
 }

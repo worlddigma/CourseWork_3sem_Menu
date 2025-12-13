@@ -55,12 +55,6 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
             parentForm = parent;
         }
 
-
-        private void RouteEdit_Load(object sender, EventArgs e)
-        {
-
-        }
-
         private void buttonDisChanges_Click(object sender, EventArgs e)
         {
 
@@ -71,10 +65,6 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
             this.Close();
         }
 
-        private void dateTimePicker2_ValueChanged(object sender, EventArgs e)
-        {
-
-        }
 
 
         private void textBoxCode_KeyPress(object sender, KeyPressEventArgs e)
@@ -305,11 +295,6 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
             {
                 e.Handled = true;
             }
-        }
-
-        private void checkedListBoxDepartureDays_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
         }
     }
 }

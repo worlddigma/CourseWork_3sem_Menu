@@ -98,7 +98,6 @@
             textBoxName.RightToLeft = RightToLeft.No;
             textBoxName.Size = new Size(91, 23);
             textBoxName.TabIndex = 49;
-            textBoxName.TextChanged += textBoxName_TextChanged;
             textBoxName.KeyPress += textName_KeyPress;
             // 
             // labelEndingPoint
@@ -181,7 +180,6 @@
             checkedListBoxCategory.Size = new Size(91, 22);
             checkedListBoxCategory.TabIndex = 65;
             checkedListBoxCategory.ItemCheck += checkedListBoxCategory_ItemCheck;
-            checkedListBoxCategory.SelectedIndexChanged += checkedListBoxCategory_SelectedIndexChanged;
             // 
             // buttonChooseClass
             // 

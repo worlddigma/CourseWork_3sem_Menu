@@ -189,7 +189,6 @@
             checkedListBoxDepartureDays.Size = new Size(105, 130);
             checkedListBoxDepartureDays.TabIndex = 44;
             checkedListBoxDepartureDays.Tag = "";
-            checkedListBoxDepartureDays.SelectedIndexChanged += checkedListBoxDepartureDays_SelectedIndexChanged;
             // 
             // dateTimePickerDepartureTime
             // 
@@ -211,7 +210,6 @@
             dateTimePickerTransportationTimeHours.Size = new Size(73, 23);
             dateTimePickerTransportationTimeHours.TabIndex = 46;
             dateTimePickerTransportationTimeHours.Value = new DateTime(2025, 11, 1, 0, 0, 0, 0);
-            dateTimePickerTransportationTimeHours.ValueChanged += dateTimePicker2_ValueChanged;
             // 
             // textBoxTransportationTimeDay
             // 
@@ -246,7 +244,6 @@
             Controls.Add(labelCode);
             Name = "RouteEdit";
             Text = "RouteEdit";
-            Load += RouteEdit_Load;
             ResumeLayout(false);
             PerformLayout();
         }

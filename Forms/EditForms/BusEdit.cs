@@ -72,10 +72,6 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
             pictureBoxBusImage.Name = null;
         }
 
-        private void label1_Click(object sender, EventArgs e)
-        {
-
-        }
         private void buttonSaveChanges_Click(object sender, EventArgs e)
         {
             // Проверка на пустые поля
@@ -249,15 +245,6 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
 
         }
 
-        private void labelBusName_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void panel1_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
 
         private void buttonDisChanges_Click(object sender, EventArgs e)
         {
@@ -497,9 +484,5 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
 
         }
 
-        private void labelYear_Click(object sender, EventArgs e)
-        {
-
-        }
     }
 }
