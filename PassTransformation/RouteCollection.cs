@@ -2,7 +2,7 @@
 {
     public class RouteCollection
     {
-        public List<Route> Routes { get; set; }
+        public List<Route> Routes;
 
         public RouteCollection() => Routes = [];
         

@@ -33,6 +33,8 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
             if (driver.Class == Class.Class2) _Class = Class.Class2;
             if (driver.Class == Class.Class3) _Class = Class.Class3;
             _Driver = driver;
+
+            labelChosenClass.Text = $"Класс: {(int)_Class}";
         }
 
         public DriverEdit(DriverStaff driverStaff, FormDrivers parent)
@@ -70,14 +72,8 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
                     if (result == DialogResult.Yes) _Class = Class.Class2;
                     else _Class = Class.Class1;
                 }
-                Label labelClass = new Label
-                {
-                    Text = ((int)_Class).ToString(),
-                    Location = new Point(325, 220),
-                    AutoSize = true,
-                    Font = new Font("Arial", 9)
-                };
-                this.Controls.Add(labelClass);
+
+                labelChosenClass.Text = $"Класс: {(int)_Class}";
             }
             catch (Exception ex)
             {
@@ -179,12 +175,14 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
 
                 // Проверка и создание ФИО
                 string[] Name = textBoxName.Text.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                string Patronomyc = "";
+                if (Name.Length == 3) Patronomyc = Name[2];
                 if (Name.Length != 3)
                 {
-                    throw new Exception("ФИО должно содержать фамилию, имя и отчество через пробел");
+                    if (Name.Length != 2)
+                        throw new Exception("ФИО должно содержать фамилию, имя и отчество через пробел");
                 }
-                FullName fullName = new(Name[0], Name[1], Name[2]);
-
+                FullName fullName = new(Name[0], Name[1], Patronomyc);
                 // Проверки через статические методы класса Driver
                 Driver.IsValidName(fullName);
                 Driver.IsValidId(int.Parse(textBoxId.Text));

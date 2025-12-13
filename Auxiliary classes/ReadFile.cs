@@ -6,21 +6,19 @@ using System.Threading.Tasks;
 
 namespace CourseWork_3sem
 {
-    public static class ReadFile
+    public class ReadFile : FileDataManager
     {
         public static void Read(BusFleet busFleet, DriverStaff driverStaff,
         RouteCollection routeCollection, VolumeOfTransportation volumeOfTransportation)
         {
             try
             {
-                string directory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Passenger travel system");
+                EnsureDataDirectoryExists();
 
-                if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
-
-                string BusFleetPath = Path.Combine(directory, "Bus fleet.txt");
-                string DriverStaffPath = Path.Combine(directory, "Driver staff.txt");
-                string RouteCollectionPath = Path.Combine(directory, "Route collection.txt");
-                string VolumeOfTransportationPath = Path.Combine(directory, "Volume of transportation.txt");
+                string BusFleetPath = GetFilePath(FilePaths["BusFleet"]);
+                string DriverStaffPath = GetFilePath(FilePaths["DriverStaff"]);
+                string RouteCollectionPath = GetFilePath(FilePaths["RouteCollection"]);
+                string VolumeOfTransportationPath = GetFilePath(FilePaths["Transportation"]);
 
                 // Корректное создание файлов
                 CreateFileIfNotExists(BusFleetPath);
@@ -36,7 +34,7 @@ namespace CourseWork_3sem
                     {
                         if (!string.IsNullOrWhiteSpace(line))
                         {
-                            busFleet.Add(line);
+                            busFleet.TryAddFromString(line);
                         }
                     }
                 }
@@ -73,7 +71,7 @@ namespace CourseWork_3sem
                     string text = VolumeOfTransportationRead.ReadToEnd();
                     if (!string.IsNullOrWhiteSpace(text))
                     {
-                        string[] lines = text.Split('[', StringSplitOptions.RemoveEmptyEntries);
+                        string[] lines = text.Split('\n', StringSplitOptions.RemoveEmptyEntries);
                         foreach (var line in lines)
                         {
                             if (!string.IsNullOrWhiteSpace(line.Trim()))

@@ -77,7 +77,6 @@
             panelRoutesMenuTitle.Name = "panelRoutesMenuTitle";
             panelRoutesMenuTitle.Size = new Size(800, 54);
             panelRoutesMenuTitle.TabIndex = 0;
-            panelRoutesMenuTitle.Paint += panelRoutesMenuTitle_Paint;
             // 
             // buttonRoutesAdd
             // 

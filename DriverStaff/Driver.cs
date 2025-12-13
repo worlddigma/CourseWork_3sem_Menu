@@ -18,10 +18,6 @@ namespace CourseWork_3sem
     }
     public class Driver
     {
-        public static class Constants
-        {
-
-        }
         private FullName _Name; //          ФИО
         private int _Id; //                 Табельный номер
         private DateTime _DateOfBirth; //   Дата рождения
@@ -34,6 +30,7 @@ namespace CourseWork_3sem
             get => _Name;
             set
             {
+                IsValidName(value);
                 IsValidName(value);
                 _Name = value;
             }
@@ -64,6 +61,8 @@ namespace CourseWork_3sem
             get => _WorkExperience;
             set
             {
+                if (_DateOfBirth == default)
+                    throw new InvalidOperationException("Сначала установите дату рождения");
                 IsValidWorkExperience(value, _DateOfBirth);
                 _WorkExperience = value;
             }

@@ -15,10 +15,18 @@ namespace CourseWork_3sem_Menu.Forms
     {
         private RouteCollection _RouteCollection;
         private Form ActiveForm;
-        public FormRoutes(RouteCollection routeCollection)
+        private VolumeOfTransportation _VolumeOfTransportation;
+        public FormRoutes(RouteCollection routeCollection, VolumeOfTransportation volumeOfTransportation)
         {
             InitializeComponent();
             _RouteCollection = routeCollection;
+            _VolumeOfTransportation = volumeOfTransportation;
+            // Настраиваем панель для скролла
+            panelRoutesList.AutoScroll = true;
+            panelRoutesList.AutoScrollMinSize = new Size(0, 0);
+            panelRoutesList.VerticalScroll.Visible = true;
+            panelRoutesList.HorizontalScroll.Visible = false;
+            panelRoutesList.AutoScrollMargin = new Size(0, 10);
             LoadRouteCollection();
         }
 
@@ -53,7 +61,7 @@ namespace CourseWork_3sem_Menu.Forms
             {
                 Size = new Size(panelRoutesList.Width - 25, 120),
                 Location = new Point(10, yPosition),
-                AutoSize = true,
+                AutoSize = false,
                 Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top,
                 BackColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
@@ -110,17 +118,68 @@ namespace CourseWork_3sem_Menu.Forms
 
         private void DeleteRoute(Route route)
         {
+            List<string> delTrans = new List<string>();
+            List<CompletedTransportation> toDelete = [];
+
+            // Проверяем, есть ли рейсы с этим маршрутом
+            if (_VolumeOfTransportation.CompletedTransportations.Count != 0)
+            {
+                foreach (var completed in _VolumeOfTransportation.CompletedTransportations)
+                {
+                    if (completed.RouteCode == route)
+                    {
+                        toDelete.Add(completed);
+                    }
+                }
+
+                // Собираем даты рейсов для отображения
+                foreach (var del in toDelete)
+                {
+                    delTrans.Add(del.TransportationDate.ToString("dd.MM.yyyy"));
+                }
+            }
+
+            // Создаем сообщение в зависимости от наличия связанных рейсов
+            string message;
+            if (delTrans.Count > 0)
+            {
+                message = $"Вы уверены, что хотите удалить маршрут {route.Code}?\n\n" +
+                          $"Будут также удалены рейсы:\n{string.Join("\n", delTrans)}";
+            }
+            else
+            {
+                message = $"Вы уверены, что хотите удалить маршрут {route.Code}?";
+            }
+
             DialogResult result = MessageBox.Show(
-                $"Вы уверены, что хотите удалить маршрут {route.Code}?",
+                message,
                 "Подтверждение удаления",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
             {
+                // Удаляем связанные рейсы
+                if (toDelete.Count != 0)
+                {
+                    foreach (var del in toDelete)
+                    {
+                        _VolumeOfTransportation.CompletedTransportations.Remove(del);
+                    }
+                }
+
+                // Удаляем сам маршрут
                 _RouteCollection.Routes.Remove(route);
                 LoadRouteCollection(); // Обновляем список
-                MessageBox.Show("Автобус успешно удален", "Успех",
+
+                // Сообщение об успехе с информацией об удаленных рейсах
+                string successMessage = "Маршрут успешно удален";
+                if (delTrans.Count > 0)
+                {
+                    successMessage += $". Также удалено {delTrans.Count} рейсов";
+                }
+
+                MessageBox.Show(successMessage, "Успех",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
@@ -144,16 +203,6 @@ namespace CourseWork_3sem_Menu.Forms
         private void buttonRoutesAdd_Click(object sender, EventArgs e)
         {
             OpenChildForm(new Forms.EditForms.RouteEdit(_RouteCollection, this), sender);
-        }
-
-        private void panelRoutesMenuTitle_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void panelRoutesMenu_Paint(object sender, PaintEventArgs e)
-        {
-
         }
 
     }

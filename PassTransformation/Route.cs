@@ -42,6 +42,7 @@ namespace CourseWork_3sem
             get => _Code;
             set
             {
+                IsValidCode(value);
                 if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException();
                 _Code = value;
             }
@@ -51,6 +52,7 @@ namespace CourseWork_3sem
             get => _StartingPoint;
             set
             {
+                IsValidPoint(value, "Начальный пункт");
                 if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException();
                 _StartingPoint = value;
             }
@@ -60,6 +62,7 @@ namespace CourseWork_3sem
             get => _EndingPoint;
             set
             {
+                IsValidPoint(value, "Конечный пункт");
                 if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException();
                 _EndingPoint = value;
             }
@@ -69,6 +72,7 @@ namespace CourseWork_3sem
             get => _IntermediatePoints;
             set
             {
+                IsValidIntermediatePoints(value);
                 if (value.DefaultIfEmpty() == null) throw new ArgumentException();
                 _IntermediatePoints = value;
             }
@@ -78,6 +82,7 @@ namespace CourseWork_3sem
             get => _DepartureDays;
             set
             {
+                IsValidDepartureDays(value);
                 _DepartureDays = value;
             }
         }
@@ -87,6 +92,7 @@ namespace CourseWork_3sem
             get => _TransportationTime;
             set
             {
+                IsValidTransportationTime(value);
                 _TransportationTime = value;
             }
         }
@@ -95,6 +101,7 @@ namespace CourseWork_3sem
             get => _DepartureTime;
             set
             {
+                IsValidDepartureTime(value);
                 if (value.Hour < 0 || value.Hour > 23) throw new ArgumentException();
                 if (value.Minute < 0 || value.Minute > 59) throw new ArgumentException();
                 if (value.Second > 59 || value.Second < 0) throw new ArgumentException();
@@ -138,6 +145,7 @@ namespace CourseWork_3sem
                     _ => "Неизвестно"
                 })];
         }
+
 
         // Статические методы валидации
         public static void IsValidCode(string code)
@@ -230,11 +238,3 @@ namespace CourseWork_3sem
         }
     }
 }
-
-//route code;
-//starting point;
-//ending point;
-//list of intermediate points where the bus stops;
-//departure time;
-//departure days;
-//travel time to the final destination.

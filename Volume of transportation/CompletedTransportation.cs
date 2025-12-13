@@ -50,6 +50,8 @@ namespace CourseWork_3sem
             {
                 if (value == SoldTickets.SoldTickets * SoldTickets.TicketCost)
                     _TotalRevenue = value;
+                else
+                    throw new ArgumentException("Неверное значение выручки");
             }
         }
 

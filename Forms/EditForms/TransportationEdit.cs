@@ -35,8 +35,29 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
             _RouteCollection = routeCollection;
             _BusFleet = busFleet;
             _DriverStaff = driverStaff;
-        }
+            _CompletedTransportation = completedTransportation;
 
+            if (_CompletedTransportation != null)
+            {
+                // Заполняем поля данными из объекта
+                textBoxCode.Text = _CompletedTransportation.RouteCode?.Code;
+                textBoxCode.Tag = _CompletedTransportation.RouteCode;
+
+                textBoxId.Text = _CompletedTransportation.DriverCode?.Id.ToString();
+                textBoxId.Tag = _CompletedTransportation.DriverCode;
+
+                textBoxStateNumber.Text = _CompletedTransportation.Bus?.StateNumber;
+                textBoxStateNumber.Tag = _CompletedTransportation.Bus;
+
+                dateTimePickerDateOfTransportation.Value = _CompletedTransportation.TransportationDate;
+
+                if (_CompletedTransportation.SoldTickets != null)
+                {
+                    textBoxSoldTickets.Text = _CompletedTransportation.SoldTickets.SoldTickets.ToString();
+                    textBoxTicketCost.Text = _CompletedTransportation.SoldTickets.TicketCost.ToString();
+                }
+            }
+        }
         public TransportationEdit(VolumeOfTransportation volumeOfTransportation,
                                   RouteCollection routeCollection,
                                   BusFleet busFleet,
@@ -58,8 +79,13 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
                 Location = new Point(0, 54),
                 Name = "panelRoutesList",
                 Size = new Size(800, 396),
-                TabIndex = 2
+                TabIndex = 2,
+                AutoScroll = true,
+                AutoScrollMinSize = new Size(0, 0),
+                AutoScrollMargin = new Size(0, 10)
             };
+            panelRoutesList.HorizontalScroll.Visible = false;
+            panelRoutesList.AutoScrollMargin = new Size(0, 10);
             var toChoose = _RouteCollection.DeepCopy();
 
             List<Route> toDelete = [];
@@ -157,9 +183,9 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
             {
                 Size = new Size(panelList.Width - 25, 120),
                 Location = new Point(10, yPosition),
+                Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top,
                 BackColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
-                AutoSize = true,
                 Tag = item // Сохраняем ссылку
             };
 
@@ -167,7 +193,7 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
             Label specsLabel = new Label
             {
                 Text = item.ToString(),
-                Location = new Point(11, yPosition),
+                Location = new Point(0,0),
                 AutoSize = true,
                 Font = new Font("Arial", 9)
             };
@@ -220,8 +246,13 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
                 Location = new Point(0, 54),
                 Name = "panelDriversList",
                 Size = new Size(800, 396),
-                TabIndex = 2
+                TabIndex = 2,
+                AutoScroll = true,
+                AutoScrollMinSize = new Size(0, 0),
+                AutoScrollMargin = new Size(0, 10)
             };
+            panelDriversList.HorizontalScroll.Visible = false;
+            panelDriversList.AutoScrollMargin = new Size(0, 10);
             Label labelNoDrivers = new Label
             {
                 Anchor = AnchorStyles.None,
@@ -329,8 +360,13 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
                 Location = new Point(0, 54),
                 Name = "panelBusList",
                 Size = new Size(800, 396),
-                TabIndex = 2
+                TabIndex = 2,
+                AutoScroll = true,
+                AutoScrollMinSize = new Size(0, 0),
+                AutoScrollMargin = new Size(0, 10)
             };
+            panelBusesList.HorizontalScroll.Visible = false;
+            panelBusesList.AutoScrollMargin = new Size(0, 10);
             Label labelNoBuses = new Label
             {
                 Anchor = AnchorStyles.None,

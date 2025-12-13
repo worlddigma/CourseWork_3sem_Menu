@@ -42,6 +42,7 @@
             labelCode = new Label();
             checkedListBoxCategory = new CheckedListBox();
             buttonChooseClass = new Button();
+            labelChosenClass = new Label();
             SuspendLayout();
             // 
             // dateTimePickerDateOfBirth
@@ -193,11 +194,22 @@
             buttonChooseClass.UseVisualStyleBackColor = true;
             buttonChooseClass.Click += buttonChooseClass_Click;
             // 
+            // labelChosenClass
+            // 
+            labelChosenClass.AutoSize = true;
+            labelChosenClass.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            labelChosenClass.Location = new Point(328, 216);
+            labelChosenClass.Name = "labelChosenClass";
+            labelChosenClass.Size = new Size(45, 17);
+            labelChosenClass.TabIndex = 67;
+            labelChosenClass.Text = "Класс:";
+            // 
             // DriverEdit
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(labelChosenClass);
             Controls.Add(buttonChooseClass);
             Controls.Add(checkedListBoxCategory);
             Controls.Add(dateTimePickerDateOfBirth);
@@ -233,5 +245,6 @@
         private Label labelCode;
         private CheckedListBox checkedListBoxCategory;
         private Button buttonChooseClass;
+        private Label labelChosenClass;
     }
 }

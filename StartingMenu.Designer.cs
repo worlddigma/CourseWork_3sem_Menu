@@ -144,7 +144,6 @@
             panelTitleBar.Name = "panelTitleBar";
             panelTitleBar.Size = new Size(675, 52);
             panelTitleBar.TabIndex = 4;
-            panelTitleBar.Paint += panelTitleBar_Paint;
             // 
             // labelTitelText
             // 
@@ -165,7 +164,6 @@
             panelDesktop.Name = "panelDesktop";
             panelDesktop.Size = new Size(675, 398);
             panelDesktop.TabIndex = 5;
-            panelDesktop.Paint += panelDesktop_Paint;
             // 
             // StartingMenu
             // 
@@ -181,11 +179,6 @@
             Name = "StartingMenu";
             Text = "Passanger Control System";
             FormClosing += StartingMenu_FormClosing;
-            Load += StartingWindow;
-            KeyDown += Form1_KeyDown;
-            KeyPress += Form1_KeyPress;
-            KeyUp += Form1_KeyUp;
-            MouseDown += StartingMenu_MouseDown;
             panelMenu.ResumeLayout(false);
             panelLogo.ResumeLayout(false);
             panelLogo.PerformLayout();

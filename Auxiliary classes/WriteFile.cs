@@ -6,19 +6,16 @@ using System.Threading.Tasks;
 
 namespace CourseWork_3sem
 {
-    public static class WriteFile
+    public class WriteFile : FileDataManager
     {
         public static void Write(BusFleet busFleet, DriverStaff driverStaff,
             RouteCollection routeCollection, VolumeOfTransportation volumeOfTransportation)
         {
-            string directory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Passenger travel system");
-
-            if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
-
-            string BusFleetPath = Path.Combine(directory, "Bus fleet.txt");
-            string DriverStaffPath = Path.Combine(directory, "Driver staff.txt");
-            string RouteCollectionPath = Path.Combine(directory, "Route collection.txt");
-            string VolumeOfTransportationPath = Path.Combine(directory, "Volume of transportation.txt");
+            EnsureDataDirectoryExists();
+            string BusFleetPath = GetFilePath(FilePaths["BusFleet"]);
+            string DriverStaffPath = GetFilePath(FilePaths["DriverStaff"]);
+            string RouteCollectionPath = GetFilePath(FilePaths["RouteCollection"]);
+            string VolumeOfTransportationPath = GetFilePath(FilePaths["Transportation"]);
 
             using (StreamWriter BusFleetWrite = new(BusFleetPath, false))
             {
@@ -37,7 +34,7 @@ namespace CourseWork_3sem
                 {
                     foreach (var drivers in driverStaff.Drivers)
                     {
-                        DriverStaffWrite.WriteLine($"{drivers.Name};{drivers.Id};{drivers.DateOfBirth.Date}" +
+                        DriverStaffWrite.WriteLine($"{drivers.Name};{drivers.Id};{drivers.DateOfBirth.ToString("dd-MM-yyyy")}" +
                             $";{drivers.WorkExperience};" +
                             $"{drivers.Category};{drivers.Class}");
                     }
@@ -62,7 +59,7 @@ namespace CourseWork_3sem
                     {
                         VolumeOfTransportationWrite.WriteLine($"{completedTransportation.RouteCode};{completedTransportation.DriverCode};" +
                             $"{completedTransportation.Bus};{completedTransportation.TransportationDate.Date};{completedTransportation.SoldTickets};" +
-                            $"{completedTransportation.TotalRevenue}[");
+                            $"{completedTransportation.TotalRevenue}");
                     }
                 }
             }

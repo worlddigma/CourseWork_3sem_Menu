@@ -18,6 +18,7 @@ namespace CourseWork_3sem_Menu
             _RouteCollection = routeCollection;
             _DriverStaff = driverStaff;
             _VolumeOfTransportation = volumeOfTransportation;
+            this.Size = new Size(900, 500);
         }
 
         private void ActivateButton(object btnSender)
@@ -61,41 +62,14 @@ namespace CourseWork_3sem_Menu
             labelTitelText.Text = childForm.Text;
 
         }
-
-
-        private void StartingWindow(object sender, EventArgs e)
-        {
-
-        }
-
-
-        private void Form1_KeyPress(object sender, KeyPressEventArgs e)
-        {
-
-        }
-
-        private void Form1_KeyDown(object sender, KeyEventArgs e)
-        {
-
-        }
-
-        private void Form1_KeyUp(object sender, KeyEventArgs e)
-        {
-        }
-
-
-        private void StartingMenu_MouseDown(object sender, MouseEventArgs e)
-        {
-        }
-
         private void buttonBuses_Click(object sender, EventArgs e)
         {
-            OpenChildForm(new Forms.FormBuses(_BusFleet), sender);
+            OpenChildForm(new Forms.FormBuses(_BusFleet, _VolumeOfTransportation), sender);
         }
 
         private void buttonRoutes_Click(object sender, EventArgs e)
         {
-            OpenChildForm(new Forms.FormRoutes(_RouteCollection), sender);
+            OpenChildForm(new Forms.FormRoutes(_RouteCollection, _VolumeOfTransportation), sender);
         }
 
         private void buttonDrivers_Click(object sender, EventArgs e)
@@ -107,17 +81,6 @@ namespace CourseWork_3sem_Menu
         {
             OpenChildForm(new Forms.FormTransportation(_RouteCollection, _BusFleet, _DriverStaff, _VolumeOfTransportation), sender);
         }
-
-        private void panelTitleBar_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void panelDesktop_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
         private void StartingMenu_FormClosing(object sender, FormClosingEventArgs e)
         {
             try

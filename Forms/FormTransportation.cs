@@ -27,6 +27,13 @@ namespace CourseWork_3sem_Menu.Forms
             _BusFleet = busFleet;
             _DriverStaff = driverStaff;
             _VolumeOfTransportation = volumeOfTransportation;
+
+            // Настраиваем панель для скролла
+            panelTransportationList.AutoScroll = true;
+            panelTransportationList.AutoScrollMinSize = new Size(0, 0);
+            panelTransportationList.VerticalScroll.Visible = true;
+            panelTransportationList.HorizontalScroll.Visible = false;
+            panelTransportationList.AutoScrollMargin = new Size(0, 10);
             LoadVolumeOfTransportation();
         }
 
@@ -53,6 +60,7 @@ namespace CourseWork_3sem_Menu.Forms
                 yPosition += completedTransportationPanel.Height + 10; // Отступ 
             }
         }
+        
         private Panel CreateTransportationPanel(CompletedTransportation completedTransportation, int yPosition)
         {
             // Создаем новую панель для 
@@ -62,7 +70,7 @@ namespace CourseWork_3sem_Menu.Forms
                 Location = new Point(10, yPosition),
                 Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top,
                 BackColor = Color.White,
-                AutoSize = true,
+                
                 BorderStyle = BorderStyle.FixedSingle,
                 Tag = completedTransportation // Сохраняем ссылку 
             };
@@ -71,7 +79,7 @@ namespace CourseWork_3sem_Menu.Forms
             Label specsLabel = new Label
             {
                 Text = completedTransportation.ToString(),
-                Location = new Point(5, yPosition-10),
+                Location = new Point(0, 0),
                 AutoSize = true,
                 Font = new Font("Arial", 9)
             };
@@ -130,7 +138,7 @@ namespace CourseWork_3sem_Menu.Forms
             }
         }
         private void OpenChildForm(Form childForm, object btnSender)
-        {
+        {   
             if (ActiveForm != null)
             {
                 ActiveForm.Close();

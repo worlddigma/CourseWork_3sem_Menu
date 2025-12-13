@@ -15,10 +15,21 @@ namespace CourseWork_3sem_Menu.Forms
     {
         private Form ActiveForm;
         private BusFleet _BusFleet;
-        public FormBuses(BusFleet busFleet)
+        private VolumeOfTransportation _VolumeOfTransportation;
+        public FormBuses(BusFleet busFleet, VolumeOfTransportation volumeOfTransportation)
         {
             _BusFleet = busFleet;
+            _VolumeOfTransportation = volumeOfTransportation;
+
             InitializeComponent();
+            
+            // Настраиваем панель для скролла
+            panelBusesList.AutoScroll = true;
+            panelBusesList.AutoScrollMinSize = new Size(0, 0);
+            panelBusesList.VerticalScroll.Visible = true;
+            panelBusesList.HorizontalScroll.Visible = false;
+            panelBusesList.AutoScrollMargin = new Size(0, 10);
+            
             LoadBusesFleet();
         }
         public void LoadBusesFleet()
@@ -53,7 +64,6 @@ namespace CourseWork_3sem_Menu.Forms
             {
                 Size = new Size(panelBusesList.Width - 25, 120),
                 Location = new Point(10, yPosition),
-                AutoSize = true,
                 BackColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
                 Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top,
@@ -153,17 +163,68 @@ namespace CourseWork_3sem_Menu.Forms
 
         private void DeleteBus(Bus bus)
         {
+            List<string> delTrans = new List<string>();
+            List<CompletedTransportation> toDelete = [];
+
+            // Проверяем, есть ли рейсы с этим автобусом
+            if (_VolumeOfTransportation.CompletedTransportations.Count != 0)
+            {
+                foreach (var completed in _VolumeOfTransportation.CompletedTransportations)
+                {
+                    if (completed.Bus == bus)
+                    {
+                        toDelete.Add(completed);
+                    }
+                }
+
+                // Собираем даты рейсов для отображения
+                foreach (var del in toDelete)
+                {
+                    delTrans.Add(del.TransportationDate.ToString("dd.MM.yyyy"));
+                }
+            }
+
+            // Создаем сообщение в зависимости от наличия связанных рейсов
+            string message;
+            if (delTrans.Count > 0)
+            {
+                message = $"Вы уверены, что хотите удалить автобус {bus.StateNumber}?\n\n" +
+                          $"Будут также удалены рейсы:\n{string.Join("\n", delTrans)}";
+            }
+            else
+            {
+                message = $"Вы уверены, что хотите удалить автобус {bus.StateNumber}?";
+            }
+
             DialogResult result = MessageBox.Show(
-                $"Вы уверены, что хотите удалить автобус {bus.StateNumber}?",
+                message,
                 "Подтверждение удаления",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
             {
+                // Удаляем связанные рейсы
+                if (toDelete.Count != 0)
+                {
+                    foreach (var del in toDelete)
+                    {
+                        _VolumeOfTransportation.CompletedTransportations.Remove(del);
+                    }
+                }
+
+                // Удаляем сам автобус
                 _BusFleet.Buses.Remove(bus);
                 LoadBusesFleet(); // Обновляем список
-                MessageBox.Show("Автобус успешно удален", "Успех",
+
+                // Сообщение об успехе с информацией об удаленных рейсах
+                string successMessage = "Автобус успешно удален";
+                if (delTrans.Count > 0)
+                {
+                    successMessage += $". Также удалено {delTrans.Count} рейсов";
+                }
+
+                MessageBox.Show(successMessage, "Успех",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
@@ -190,8 +251,6 @@ namespace CourseWork_3sem_Menu.Forms
         private void buttonBusAdd_Click(object sender, EventArgs e)
         {
             OpenChildForm(new Forms.EditForms.BusEdit(_BusFleet, this), sender);
-            
-
         }
 
     }

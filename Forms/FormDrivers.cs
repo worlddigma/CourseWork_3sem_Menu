@@ -23,6 +23,13 @@ namespace CourseWork_3sem_Menu.Forms
             InitializeComponent();
             _DriverStaff = driverStaff;
            _VolumeOfTransportation = volumeOfTransportation;
+
+            // Настраиваем панель для скролла
+            panelDriversList.AutoScroll = true;
+            panelDriversList.AutoScrollMinSize = new Size(0, 0);
+            panelDriversList.VerticalScroll.Visible = true;
+            panelDriversList.HorizontalScroll.Visible = false;
+            panelDriversList.AutoScrollMargin = new Size(0, 10);
             LoadDriverStaff();
         }
         public void LoadDriverStaff()
@@ -55,7 +62,6 @@ namespace CourseWork_3sem_Menu.Forms
             {
                 Size = new Size(panelDriversList.Width - 25, 120),
                 Location = new Point(10, yPosition),
-                AutoSize = true,
                 BackColor = Color.White,
                 Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top,
                 BorderStyle = BorderStyle.FixedSingle,
@@ -114,19 +120,18 @@ namespace CourseWork_3sem_Menu.Forms
             {
                 foreach (var toDel in _VolumeOfTransportation.CompletedTransportations)
                 {
-                    if (Bus.Equals(toDel.DriverCode, driver))
+                    if (toDel.DriverCode == driver)
                     {
                         toDelete.Add(toDel);
                     }
                 }
                 foreach (var del in toDelete)
                 {
-                    delTrans.Add(del.TransportationDate.ToString());
+                    delTrans.Add(del.TransportationDate.ToString("dd.MM.yyyy"));
                 }
             }
             DialogResult result = MessageBox.Show(
-                $"Вы уверены, что хотите удалить водителя {driver.Id}?" +
-                $"{(delTrans.Count == 0 ? $"Будут также удалены рейсы: {string.Join(", ", delTrans)}" : "")}",
+                $"Вы уверены, что хотите удалить водителя {driver.Id}? {(delTrans.Count != 0 ? $"\nБудут также удалены рейсы: \n{string.Join("\n", delTrans)}" : "")}",
                 "Подтверждение удаления",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question);
