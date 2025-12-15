@@ -13,15 +13,18 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace CourseWork_3sem_Menu.Forms.EditForms
 {
+    // Форма для добавления/редактирования выполненного рейса
     public partial class TransportationEdit : Form
     {
-        private FormTransportation parentForm;
-        private VolumeOfTransportation _VolumeOfTransportation;
-        private DriverStaff _DriverStaff;
-        private RouteCollection _RouteCollection;
-        private BusFleet _BusFleet;
-        private CompletedTransportation _CompletedTransportation;
-        private Route _Route;
+        private FormTransportation parentForm;          // Родительская форма
+        private VolumeOfTransportation _VolumeOfTransportation; // Список рейсов
+        private DriverStaff _DriverStaff;               // Список водителей
+        private RouteCollection _RouteCollection;       // Список маршрутов
+        private BusFleet _BusFleet;                     // Список автобусов
+        private CompletedTransportation _CompletedTransportation; // Редактируемый рейс
+        private Route _Route;                           // Выбранный маршрут
+
+        // Конструктор для редактирования существующего рейса
         public TransportationEdit(VolumeOfTransportation volumeOfTransportation,
                                   RouteCollection routeCollection,
                                   BusFleet busFleet,
@@ -39,7 +42,7 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
 
             if (_CompletedTransportation != null)
             {
-                // Заполняем поля данными из объекта
+                // Заполнение полей данными редактируемого рейса
                 textBoxCode.Text = _CompletedTransportation.RouteCode?.Code;
                 textBoxCode.Tag = _CompletedTransportation.RouteCode;
 
@@ -58,6 +61,8 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
                 }
             }
         }
+
+        // Конструктор для добавления нового рейса
         public TransportationEdit(VolumeOfTransportation volumeOfTransportation,
                                   RouteCollection routeCollection,
                                   BusFleet busFleet,
@@ -71,494 +76,346 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
             _DriverStaff = driverStaff;
             parentForm = parent;
         }
+
+        // Выбор маршрута для рейса
         private void buttonChooseRoute_Click(object sender, EventArgs e)
         {
+            // Создание панели для выбора маршрутов
             Panel panelRoutesList = new Panel
             {
                 Dock = DockStyle.Fill,
-                Location = new Point(0, 54),
-                Name = "panelRoutesList",
-                Size = new Size(800, 396),
-                TabIndex = 2,
                 AutoScroll = true,
-                AutoScrollMinSize = new Size(0, 0),
-                AutoScrollMargin = new Size(0, 10)
+                HorizontalScroll = { Visible = false }
             };
-            panelRoutesList.HorizontalScroll.Visible = false;
-            panelRoutesList.AutoScrollMargin = new Size(0, 10);
-            var toChoose = _RouteCollection.DeepCopy();
 
-            List<Route> toDelete = [];
-            foreach (var route in toChoose.Routes)
-            {
-                if (!route.DepartureDays.Contains(dateTimePickerDateOfTransportation.Value.DayOfWeek)) toDelete.Add(route); // Проверка совпадения дня недели рейса и дней когда выполняется маршрут
-            }
-            foreach (var del in toDelete) toChoose.Routes.Remove(del);
-            if (toChoose.Routes == null || toChoose.Routes.Count == 0)
-            {
-                Label labelNoRoutes = new Label
-                {
-                    Anchor = AnchorStyles.None,
-                    AutoSize = true,
-                    Font = new Font("Segoe UI", 20.25F, FontStyle.Regular, GraphicsUnit.Point, 204),
-                    Location = new Point(288, 171),
-                    Name = "labelNoRoutes",
-                    Size = new Size(211, 37),
-                    TabIndex = 5,
-                    Text = "Маршрутов нет",
-                    Visible = true
-                };
-                Label LabelClickToLeave = new Label
-                {
-                    Anchor = AnchorStyles.None,
-                    Text = "Кликните в любом месте чтобы выйти",
-                    Location = new Point(labelNoRoutes.Width + 50, labelNoRoutes.Height + 100),
-                    AutoSize = true,
-                    Font = new Font("Arial", 10)
-                };
-                panelRoutesList.Controls.Add(LabelClickToLeave);
+            // Фильтрация маршрутов по дню недели
+            var availableRoutes = _RouteCollection.DeepCopy();
+            availableRoutes.Routes.RemoveAll(route =>
+                !route.DepartureDays.Contains(dateTimePickerDateOfTransportation.Value.DayOfWeek));
 
-                panelRoutesList.Click += (s, e) => panelList_CLick(panelRoutesList);
-                panelRoutesList.Controls.Add(labelNoRoutes);
-                this.Controls.Clear();
-                this.Controls.Add(panelRoutesList);
+            // Проверка наличия маршрутов
+            if (!availableRoutes.Routes.Any())
+            {
+                ShowNoItemsMessage(panelRoutesList, "Маршрутов нет",
+                    "Маршрутов для выбранного дня недели не найдено");
                 return;
             }
 
-            int yPosition = 10; // Начальная позиция
-
-            
-            foreach (var route in toChoose.Routes)
+            // Отображение доступных маршрутов
+            int yPosition = 10;
+            foreach (var route in availableRoutes.Routes)
             {
-                Panel routePanel = CreatePanel(route, yPosition, panelRoutesList, ChooseButton_Click);
+                Panel routePanel = CreatePanel(route, yPosition, panelRoutesList, ChooseRoute);
                 panelRoutesList.Controls.Add(routePanel);
-
-                yPosition += routePanel.Height + 10; // Отступ 
+                yPosition += routePanel.Height + 10;
             }
-            Label InfoLabel = new Label
-            {
-                Text = "Маршруты день недели отправления которых совпадают с днем выезда",
-                Location = new Point(11, yPosition),
-                AutoSize = true,
-                Font = new Font("Arial", 9)
-            };
 
-            this.Controls.Clear();
-            this.Controls.Add(InfoLabel);
-            this.Controls.Add(panelRoutesList);
+            ShowSelectionPanel(panelRoutesList,
+                "Маршруты с отправлением в выбранный день недели");
         }
 
-        private void panelList_CLick(Panel panel)
-        {
-            this.Controls.Clear();
-            this.Controls.Add(panelTransportationEdit);
-        }
-
-        public Panel CreatePanel<T>(T item, int yPosition, Panel panelList, Action<T> ChooseAction)
-        {
-            if (item is Bus bus)
-            {
-                // PictureBox для изображения
-                PictureBox pictureBox = new PictureBox
-                {
-                    Size = new Size(150, 100),
-                    Location = new Point(10, 10),
-                    SizeMode = PictureBoxSizeMode.Zoom,
-                    BorderStyle = BorderStyle.FixedSingle
-                };
-
-                // Загружаем изображение
-                if (!string.IsNullOrEmpty(bus.Photo) && System.IO.File.Exists(bus.Photo))
-                {
-                    pictureBox.Image = Image.FromFile(bus.Photo);
-                }
-                else
-                {
-                    // Создаем заглушку
-                    FormBuses.CreateImagePlaceholder(pictureBox);
-                }
-            }
-            // Создаем новую панель
-            Panel panel = new Panel
-            {
-                Size = new Size(panelList.Width - 25, 120),
-                Location = new Point(10, yPosition),
-                Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top,
-                BackColor = Color.White,
-                BorderStyle = BorderStyle.FixedSingle,
-                Tag = item // Сохраняем ссылку
-            };
-
-            // Информация о маршруте
-            Label specsLabel = new Label
-            {
-                Text = item.ToString(),
-                Location = new Point(0,0),
-                AutoSize = true,
-                Font = new Font("Arial", 9)
-            };
-
-            // Кнопка выбора
-            System.Windows.Forms.Button ChooseButton = new System.Windows.Forms.Button
-            {
-                Text = "Выбрать",
-                Size = new Size(100, 30),
-                Location = new Point(panel.Width - 110, 80),
-                Anchor = AnchorStyles.Right,
-                BackColor = Color.DarkGray,
-                ForeColor = Color.White,
-                Tag = item
-            };
-            ChooseButton.Click += (s, e) => ChooseAction(item);
-
-            panel.Controls.Add(specsLabel);
-            panel.Controls.Add(ChooseButton);
-
-            return panel;
-        }
-
-        private void ChooseButton_Click(Route route)
-        {
-            textBoxCode.Text = route.Code;
-            textBoxCode.Tag = route;
-            this.Controls.Clear();
-            this.Controls.Add(panelTransportationEdit);
-        }
-        private void ChooseButton_Click(Driver driver)
-        {
-            textBoxId.Text = driver.Id.ToString();
-            textBoxId.Tag = driver;
-            this.Controls.Clear();
-            this.Controls.Add(panelTransportationEdit);
-        }
-        private void ChooseButton_Click(Bus bus)
-        {
-            textBoxStateNumber.Text = bus.StateNumber;
-            textBoxStateNumber.Tag = bus;
-            this.Controls.Clear();
-            this.Controls.Add(panelTransportationEdit);
-        }
+        // Выбор водителя для рейса
         private void buttonChooseDriver_Click(object sender, EventArgs e)
         {
             Panel panelDriversList = new Panel
             {
                 Dock = DockStyle.Fill,
-                Location = new Point(0, 54),
-                Name = "panelDriversList",
-                Size = new Size(800, 396),
-                TabIndex = 2,
                 AutoScroll = true,
-                AutoScrollMinSize = new Size(0, 0),
-                AutoScrollMargin = new Size(0, 10)
-            };
-            panelDriversList.HorizontalScroll.Visible = false;
-            panelDriversList.AutoScrollMargin = new Size(0, 10);
-            Label labelNoDrivers = new Label
-            {
-                Anchor = AnchorStyles.None,
-                AutoSize = true,
-                Font = new Font("Segoe UI", 20.25F, FontStyle.Regular, GraphicsUnit.Point, 204),
-                Location = new Point(288, 171),
-                Name = "labelNoRoutes",
-                Size = new Size(211, 37),
-                TabIndex = 5,
-                Text = "Водителей нет",
-                Visible = true
-            };
-            Label LabelClickToLeave = new Label
-            {
-                Anchor = AnchorStyles.None,
-                Text = "Кликните в любом месте чтобы выйти",
-                Location = new Point(labelNoDrivers.Width + 50, labelNoDrivers.Height + 100),
-                AutoSize = true,
-                Font = new Font("Arial", 10)
+                HorizontalScroll = { Visible = false }
             };
 
-            if (_DriverStaff.Drivers == null || _DriverStaff.Drivers.Count == 0)
-            {
+            // Фильтрация водителей по возрасту (должно быть >= 18 лет)
+            var availableDrivers = _DriverStaff.DeepCopy();
+            availableDrivers.Drivers.RemoveAll(driver =>
+                dateTimePickerDateOfTransportation.Value.Year - driver.DateOfBirth.Year < 18);
 
-                panelDriversList.Controls.Add(LabelClickToLeave);
-                panelDriversList.Click += (s, e) => panelList_CLick(panelDriversList);
-                panelDriversList.Controls.Add(labelNoDrivers);
-                this.Controls.Clear();
-                this.Controls.Add(panelDriversList);
+            // Исключение водителей, уже занятых в это время
+            if (_VolumeOfTransportation.CompletedTransportations.Any())
+            {
+                var busyDrivers = GetBusyDriversAtTime(dateTimePickerDateOfTransportation.Value);
+                availableDrivers.Drivers.RemoveAll(driver => busyDrivers.Contains(driver));
+            }
+
+            // Проверка наличия водителей
+            if (!availableDrivers.Drivers.Any())
+            {
+                ShowNoItemsMessage(panelDriversList, "Водителей нет",
+                    "Нет свободных водителей на выбранное время");
                 return;
             }
-            int yPosition = 10; // Начальная позиция
 
-            var toChoose = _DriverStaff.DeepCopy();
-            List<Driver> toDelete = [];
-            foreach (var dateOfBirth in toChoose.Drivers)
+            // Отображение доступных водителей
+            int yPosition = 10;
+            foreach (var driver in availableDrivers.Drivers)
             {
-                if (dateTimePickerDateOfTransportation.Value.Year - dateOfBirth.DateOfBirth.Year < 18)
-                    toDelete.Add(dateOfBirth);
+                Panel driverPanel = CreatePanel(driver, yPosition, panelDriversList, ChooseDriver);
+                panelDriversList.Controls.Add(driverPanel);
+                yPosition += driverPanel.Height + 10;
             }
-            foreach (var del in toDelete) toChoose.Drivers.Remove(del);
-            if (toChoose.Drivers.Count == 0)
-            {
-                panelDriversList.Controls.Add(LabelClickToLeave);
-                panelDriversList.Click += (s, e) => panelList_CLick(panelDriversList);
-                panelDriversList.Controls.Add(labelNoDrivers);
-                this.Controls.Clear();
-                this.Controls.Add(panelDriversList);
-                return;
-            }
-            if (_VolumeOfTransportation.CompletedTransportations.Count == 0)
-            {
-                foreach (var driver in toChoose.Drivers)
-                {
-                    Panel driverPanel = CreatePanel(driver, yPosition, panelDriversList, ChooseButton_Click);
-                    panelDriversList.Controls.Add(driverPanel);
 
-                    yPosition += driverPanel.Height + 10; // Отступ 
-                }
-
-            }
-            else
-            {
-                foreach (var driver in _VolumeOfTransportation.CompletedTransportations) //     Удаление выполняющих в это время рейс водителей
-                {
-                    //      Проверка дата выполненного рейса < выбранное время рейса < дата окончания выполненного рейса
-                    if (driver.TransportationDate <= dateTimePickerDateOfTransportation.Value && driver.TransportationDate + driver.RouteCode.TransportationTime <= dateTimePickerDateOfTransportation.Value)
-                        toChoose.Drivers.Remove(driver.DriverCode);
-                }
-                foreach (var driver in toChoose.Drivers)
-                {
-                    Panel driverPanel = CreatePanel(driver, yPosition, panelDriversList, ChooseButton_Click);
-                    panelDriversList.Controls.Add(driverPanel);
-
-                    yPosition += driverPanel.Height + 10; // Отступ 
-                }
-                if (toChoose.Drivers.Count == 0)
-                {
-                    panelDriversList.Controls.Add(LabelClickToLeave);
-                    panelDriversList.Click += (s, e) => panelList_CLick(panelDriversList);
-                    panelDriversList.Controls.Add(labelNoDrivers);
-                    this.Controls.Clear();
-                    this.Controls.Add(panelDriversList);
-                    return;
-                }
-            }
-            Label InfoLabel = new Label
-            {
-                Text = "Водители которым на момент рейса было больше 18 лет",
-                Location = new Point(11, yPosition),
-                AutoSize = true,
-                Font = new Font("Arial", 9)
-            };
-
-            this.Controls.Clear();
-            this.Controls.Add(InfoLabel);
-            this.Controls.Add(panelDriversList);
+            ShowSelectionPanel(panelDriversList, "Свободные водители на выбранное время");
         }
 
+        // Выбор автобуса для рейса
         private void buttonChooseBus_Click(object sender, EventArgs e)
         {
             Panel panelBusesList = new Panel
             {
                 Dock = DockStyle.Fill,
-                Location = new Point(0, 54),
-                Name = "panelBusList",
-                Size = new Size(800, 396),
-                TabIndex = 2,
                 AutoScroll = true,
-                AutoScrollMinSize = new Size(0, 0),
-                AutoScrollMargin = new Size(0, 10)
-            };
-            panelBusesList.HorizontalScroll.Visible = false;
-            panelBusesList.AutoScrollMargin = new Size(0, 10);
-            Label labelNoBuses = new Label
-            {
-                Anchor = AnchorStyles.None,
-                AutoSize = true,
-                Font = new Font("Segoe UI", 20.25F, FontStyle.Regular, GraphicsUnit.Point, 204),
-                Location = new Point(288, 171),
-                Name = "labelNoRoutes",
-                Size = new Size(211, 37),
-                TabIndex = 5,
-                Text = "Автобусов нет",
-                Visible = true
-            };
-            Label LabelClickToLeave = new Label
-            {
-                Anchor = AnchorStyles.None,
-                Text = "Кликните в любом месте чтобы выйти",
-                Location = new Point(labelNoBuses.Width + 50, labelNoBuses.Height + 100),
-                AutoSize = true,
-                Font = new Font("Arial", 10)
+                HorizontalScroll = { Visible = false }
             };
 
-            if (_BusFleet.Buses == null || _BusFleet.Buses.Count == 0)
+            // Фильтрация автобусов (год выпуска должен быть <= года рейса)
+            var availableBuses = _BusFleet.DeepCopy();
+            availableBuses.Buses.RemoveAll(bus =>
+                dateTimePickerDateOfTransportation.Value.Year - bus.Year < 0);
+
+            // Исключение автобусов, уже занятых в это время
+            if (_VolumeOfTransportation.CompletedTransportations.Any())
             {
+                var busyBuses = GetBusyBusesAtTime(dateTimePickerDateOfTransportation.Value);
+                availableBuses.Buses.RemoveAll(bus => busyBuses.Contains(bus));
+            }
 
-                panelBusesList.Controls.Add(LabelClickToLeave);
-
-                panelBusesList.Click += (s, e) => panelList_CLick(panelBusesList);
-                panelBusesList.Controls.Add(labelNoBuses);
-                this.Controls.Clear();
-                this.Controls.Add(panelBusesList);
+            // Проверка наличия автобусов
+            if (!availableBuses.Buses.Any())
+            {
+                ShowNoItemsMessage(panelBusesList, "Автобусов нет",
+                    "Нет свободных автобусов на выбранное время");
                 return;
             }
-            int yPosition = 10; // Начальная позиция
 
-            var toChoose = _BusFleet.DeepCopy();
-            List<Bus> toDelete = [];
-            foreach (var year in toChoose.Buses)
+            // Отображение доступных автобусов
+            int yPosition = 10;
+            foreach (var bus in availableBuses.Buses)
             {
-                if (dateTimePickerDateOfTransportation.Value.Year - year.Year < 0) // Проверка выпуска автобуса и года выполнения рейса
-                    toDelete.Add(year);
-            }
-            foreach (var del in toDelete) toChoose.Buses.Remove(del);
-
-            if (_VolumeOfTransportation.CompletedTransportations.Count != 0)
-            {
-                foreach (var completedTransportation in _VolumeOfTransportation.CompletedTransportations)
-                {
-                    // Проверка пересечения по времени
-                    DateTime existingStart = completedTransportation.TransportationDate;
-                    DateTime existingEnd = existingStart + completedTransportation.RouteCode.TransportationTime;
-                    DateTime newStart = dateTimePickerDateOfTransportation.Value;
-                    DateTime newEnd = newStart + dateTimePickerDateOfTransportation.Value.TimeOfDay; // нужно знать время нового маршрута
-
-                    bool timeConflict = newStart < existingEnd && newEnd > existingStart;
-
-                    if (timeConflict)
-                        toChoose.Buses.Remove(completedTransportation.Bus);
-                }
-            }
-            foreach (var bus in toChoose.Buses)
-            {
-                Panel busPanel = CreatePanel(bus, yPosition, panelBusesList, ChooseButton_Click);
+                Panel busPanel = CreatePanel(bus, yPosition, panelBusesList, ChooseBus);
                 panelBusesList.Controls.Add(busPanel);
-
-                yPosition += busPanel.Height + 10; // Отступ 
+                yPosition += busPanel.Height + 10;
             }
 
-            if (toChoose.Buses.Count == 0)
-            {
-                panelBusesList.Controls.Add(LabelClickToLeave);
-                panelBusesList.Click += (s, e) => panelList_CLick(panelBusesList);
-                panelBusesList.Controls.Add(labelNoBuses);
-                this.Controls.Clear();
-                this.Controls.Add(panelBusesList);
-                return;
-            }
-                
-            Label InfoLabel = new Label
-            {
-                Text = "Доступные автобусы",
-                Location = new Point(11, yPosition),
-                AutoSize = true,
-                Font = new Font("Arial", 9)
-            };
-
-            this.Controls.Clear();
-            this.Controls.Add(InfoLabel);
-            this.Controls.Add(panelBusesList);
-
+            ShowSelectionPanel(panelBusesList, "Свободные автобусы на выбранное время");
         }
 
-        private void buttonDisChanges_Click(object sender, EventArgs e)
-        {
-            this.parentForm.LoadVolumeOfTransportation();
-            this.parentForm.BringToFront();
-            this.parentForm.Show();
-            this.parentForm.panelTransportationMenuTitle.Show();
-            this.Close();
-        }
-
+        // Сохранение рейса
         private void buttonSaveChanges_Click(object sender, EventArgs e)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(textBoxSoldTickets.Text))
-                {
-                    throw new Exception("Поле с количеством проданных билетов не может быть пустым");
-                }
-                if (string.IsNullOrWhiteSpace(textBoxTicketCost.Text))
-                {
-                    throw new Exception("Поле c ценой билетов не может быть пустым!");
-                }
-                Tickets tickets = new(int.Parse(textBoxSoldTickets.Text), int.Parse(textBoxTicketCost.Text));
+                // Валидация полей
+                if (string.IsNullOrWhiteSpace(textBoxSoldTickets.Text) ||
+                    string.IsNullOrWhiteSpace(textBoxTicketCost.Text))
+                    throw new Exception("Заполните все поля с билетами.");
+
+                if (textBoxCode.Tag == null || textBoxId.Tag == null || textBoxStateNumber.Tag == null)
+                    throw new Exception("Выберите маршрут, водителя и автобус.");
+
+                // Парсинг данных о билетах
+                if (!int.TryParse(textBoxSoldTickets.Text, out int soldTickets) ||
+                    !int.TryParse(textBoxTicketCost.Text, out int ticketCost))
+                    throw new Exception("Некорректные значения билетов.");
+
+                Tickets tickets = new(soldTickets, ticketCost);
+
+                // Проверка уникальности рейса (для добавления)
                 if (_CompletedTransportation == null)
                 {
-                    // Проверка на дубликат государственного номера
-                    if (_VolumeOfTransportation.CompletedTransportations.Any(completed => completed.TransportationDate == dateTimePickerDateOfTransportation.Value))
+                    if (_VolumeOfTransportation.CompletedTransportations.Any(ct =>
+                        ct.TransportationDate.Date == dateTimePickerDateOfTransportation.Value.Date))
                     {
-                        MessageBox.Show("Рейс в этот день уже существует.", "Ошибка",
-                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Рейс в этот день уже существует.", "Ошибка");
                         return;
                     }
 
-                    // Создание и добавление автобуса
+                    // Создание нового рейса
                     CompletedTransportation completedTransportation = new(
                         (Route)textBoxCode.Tag,
                         (Driver)textBoxId.Tag,
                         (Bus)textBoxStateNumber.Tag,
                         dateTimePickerDateOfTransportation.Value,
                         tickets
-        );
+                    );
                     _VolumeOfTransportation.CompletedTransportations.Add(completedTransportation);
-
-                    MessageBox.Show("Рейс успешно добавлен!", "Успех",
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
-
+                    MessageBox.Show("Рейс успешно добавлен!", "Успех");
                 }
                 else
                 {
+                    // Обновление существующего рейса
                     _CompletedTransportation.RouteCode = (Route)textBoxCode.Tag;
                     _CompletedTransportation.DriverCode = (Driver)textBoxId.Tag;
                     _CompletedTransportation.Bus = (Bus)textBoxStateNumber.Tag;
                     _CompletedTransportation.TransportationDate = dateTimePickerDateOfTransportation.Value;
                     _CompletedTransportation.SoldTickets = tickets;
                     _CompletedTransportation.TotalRevenue = tickets.SoldTickets * tickets.TicketCost;
-                    MessageBox.Show("Маршрут успешно изменен!", "Успех",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-
+                    MessageBox.Show("Рейс успешно изменен!", "Успех");
                 }
 
-                ClearForm();
-                this.parentForm.LoadVolumeOfTransportation();
-                this.parentForm.BringToFront();
-                this.parentForm.Show();
-                this.parentForm.panelTransportationMenuTitle.Show();
+                // Закрытие формы и обновление родительской формы
+                parentForm.LoadVolumeOfTransportation();
+                parentForm.panelTransportationMenuTitle.Show();
                 this.Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Ошибка сохранения маршрута");
+                MessageBox.Show(ex.Message, "Ошибка");
             }
         }
 
-            private void ClearForm()
+        // Отмена изменений
+        private void buttonDisChanges_Click(object sender, EventArgs e)
         {
-            // Очистка текстовых полей
-            textBoxCode.Clear();
-            textBoxId.Clear();
-            textBoxStateNumber.Clear();
-            textBoxSoldTickets.Clear();
-            textBoxTicketCost.Clear();
-
-            // Очистка Tag свойств
-            textBoxCode.Tag = null;
-            textBoxId.Tag = null;
-            textBoxStateNumber.Tag = null;
-
-            // Установка даты по умолчанию (текущая дата)
-            dateTimePickerDateOfTransportation.Value = DateTime.Now;
+            parentForm.LoadVolumeOfTransportation();
+            parentForm.panelTransportationMenuTitle.Show();
+            this.Close();
         }
+
+        // Вспомогательные методы
+
+        // Создание панели для выбора элемента
+        private Panel CreatePanel<T>(T item, int yPosition, Panel parentPanel, Action<T> chooseAction)
+        {
+            Panel panel = new Panel
+            {
+                Size = new Size(parentPanel.Width - 25, 120),
+                Location = new Point(10, yPosition),
+                BackColor = Color.White,
+                BorderStyle = BorderStyle.FixedSingle,
+                Tag = item
+            };
+
+            Label specsLabel = new Label
+            {
+                Text = item.ToString(),
+                Location = new Point(0, 0),
+                AutoSize = true,
+                Font = new Font("Arial", 9)
+            };
+
+            System.Windows.Forms.Button chooseButton = new System.Windows.Forms.Button
+            {
+                Text = "Выбрать",
+                Size = new Size(100, 30),
+                Location = new Point(panel.Width - 110, 80),
+                BackColor = Color.DarkGray,
+                ForeColor = Color.White,
+                Tag = item
+            };
+            chooseButton.Click += (s, ev) => chooseAction(item);
+
+            panel.Controls.Add(specsLabel);
+            panel.Controls.Add(chooseButton);
+            return panel;
+        }
+
+        // Показать сообщение об отсутствии элементов
+        private void ShowNoItemsMessage(Panel panel, string title, string message)
+        {
+            panel.Controls.Clear();
+
+            Label titleLabel = new Label
+            {
+                Text = title,
+                Font = new Font("Segoe UI", 20),
+                AutoSize = true,
+                Location = new Point(288, 171)
+            };
+
+            Label messageLabel = new Label
+            {
+                Text = message,
+                Font = new Font("Arial", 10),
+                AutoSize = true,
+                Location = new Point(titleLabel.Width + 50, titleLabel.Height + 100)
+            };
+
+            panel.Controls.Add(titleLabel);
+            panel.Controls.Add(messageLabel);
+            panel.Click += (s, e) => ReturnToEditForm(panel);
+
+            this.Controls.Clear();
+            this.Controls.Add(panel);
+        }
+
+        // Показать панель выбора
+        private void ShowSelectionPanel(Panel selectionPanel, string infoText)
+        {
+            Label infoLabel = new Label
+            {
+                Text = infoText,
+                Location = new Point(11, selectionPanel.Height + 10),
+                AutoSize = true,
+                Font = new Font("Arial", 9)
+            };
+
+            this.Controls.Clear();
+            this.Controls.Add(infoLabel);
+            this.Controls.Add(selectionPanel);
+        }
+
+        // Возврат к форме редактирования
+        private void ReturnToEditForm(Panel panel)
+        {
+            this.Controls.Clear();
+            this.Controls.Add(panelTransportationEdit);
+        }
+
+        // Обработчики выбора элементов
+
+        private void ChooseRoute(Route route)
+        {
+            textBoxCode.Text = route.Code;
+            textBoxCode.Tag = route;
+            ReturnToEditForm(null);
+        }
+
+        private void ChooseDriver(Driver driver)
+        {
+            textBoxId.Text = driver.Id.ToString();
+            textBoxId.Tag = driver;
+            ReturnToEditForm(null);
+        }
+
+        private void ChooseBus(Bus bus)
+        {
+            textBoxStateNumber.Text = bus.StateNumber;
+            textBoxStateNumber.Tag = bus;
+            ReturnToEditForm(null);
+        }
+
+        // Получение занятых водителей на указанное время
+        private List<Driver> GetBusyDriversAtTime(DateTime time)
+        {
+            return _VolumeOfTransportation.CompletedTransportations
+                .Where(ct => IsTimeOverlap(ct.TransportationDate,
+                       ct.TransportationDate + ct.RouteCode.TransportationTime, time))
+                .Select(ct => ct.DriverCode)
+                .Distinct()
+                .ToList();
+        }
+
+        // Получение занятых автобусов на указанное время
+        private List<Bus> GetBusyBusesAtTime(DateTime time)
+        {
+            return _VolumeOfTransportation.CompletedTransportations
+                .Where(ct => IsTimeOverlap(ct.TransportationDate,
+                       ct.TransportationDate + ct.RouteCode.TransportationTime, time))
+                .Select(ct => ct.Bus)
+                .Distinct()
+                .ToList();
+        }
+
+        // Проверка пересечения временных интервалов
+        private bool IsTimeOverlap(DateTime start1, DateTime end1, DateTime checkTime)
+        {
+            return checkTime >= start1 && checkTime <= end1;
+        }
+
+        // Валидация ввода цены билета
         private void textBoxTicketCost_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (char.IsControl(e.KeyChar))
-            {
-                return;
-            }
-            if (!char.IsDigit(e.KeyChar))
-            {
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
                 e.Handled = true;
-                return;
-            }
         }
     }
 }

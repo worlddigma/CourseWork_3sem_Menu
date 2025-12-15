@@ -11,25 +11,27 @@ using System.Windows.Forms;
 
 namespace CourseWork_3sem_Menu.Forms
 {
+    // Форма для управления маршрутами
     public partial class FormRoutes : Form
     {
-        private RouteCollection _RouteCollection;
-        private Form ActiveForm;
-        private VolumeOfTransportation _VolumeOfTransportation;
+        private RouteCollection _RouteCollection;           // Список всех маршрутов
+        private Form ActiveForm;                            // Текущая дочерняя форма
+        private VolumeOfTransportation _VolumeOfTransportation; // Список выполненных рейсов
+
         public FormRoutes(RouteCollection routeCollection, VolumeOfTransportation volumeOfTransportation)
         {
             InitializeComponent();
             _RouteCollection = routeCollection;
             _VolumeOfTransportation = volumeOfTransportation;
-            // Настраиваем панель для скролла
+
+            // Настройка скролл-панели
             panelRoutesList.AutoScroll = true;
-            panelRoutesList.AutoScrollMinSize = new Size(0, 0);
-            panelRoutesList.VerticalScroll.Visible = true;
             panelRoutesList.HorizontalScroll.Visible = false;
-            panelRoutesList.AutoScrollMargin = new Size(0, 10);
-            LoadRouteCollection();
+
+            LoadRouteCollection(); // Загрузка маршрутов
         }
 
+        // Загрузка и отображение списка маршрутов
         public void LoadRouteCollection()
         {
             panelRoutesList.Controls.Clear();
@@ -42,30 +44,27 @@ namespace CourseWork_3sem_Menu.Forms
             }
 
             labelNoRoutes.Visible = false;
+            int yPosition = 10;
 
-            int yPosition = 10; // Начальная позиция
-
+            // Создание панели для каждого маршрута
             foreach (var route in _RouteCollection.Routes)
             {
                 Panel routePanel = CreateRoutePanel(route, yPosition);
                 panelRoutesList.Controls.Add(routePanel);
-
-                yPosition += routePanel.Height + 10; // Отступ 
+                yPosition += routePanel.Height + 10;
             }
         }
+
+        // Создание карточки маршрута
         public Panel CreateRoutePanel(Route route, int yPosition)
         {
-
-            // Создаем новую панель для каждого автобуса
             Panel panel = new Panel
             {
                 Size = new Size(panelRoutesList.Width - 25, 120),
                 Location = new Point(10, yPosition),
-                AutoSize = false,
-                Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top,
                 BackColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
-                Tag = route // Сохраняем ссылку на автобус
+                Tag = route // Ссылка на объект маршрута
             };
 
             // Информация о маршруте
@@ -74,8 +73,7 @@ namespace CourseWork_3sem_Menu.Forms
                 Text = route.ToString(),
                 Location = new Point(0, 0),
                 AutoSize = true,
-                Font = new Font("Arial", 9),
-                Anchor = AnchorStyles.Left | AnchorStyles.Top
+                Font = new Font("Arial", 9)
             };
 
             // Кнопка редактирования
@@ -83,9 +81,7 @@ namespace CourseWork_3sem_Menu.Forms
             {
                 Text = "Редактировать",
                 Size = new Size(110, 30),
-                AutoSize = true,
                 Location = new Point(panel.Width - 220, 80),
-                Anchor = AnchorStyles.Right,
                 BackColor = Color.DarkGray,
                 ForeColor = Color.White,
                 Tag = route
@@ -98,7 +94,6 @@ namespace CourseWork_3sem_Menu.Forms
                 Text = "Удалить",
                 Size = new Size(100, 30),
                 Location = new Point(panel.Width - 110, 80),
-                Anchor = AnchorStyles.Right,
                 BackColor = Color.DarkGray,
                 ForeColor = Color.White,
                 Tag = route
@@ -111,99 +106,78 @@ namespace CourseWork_3sem_Menu.Forms
 
             return panel;
         }
+
+        // Открытие формы редактирования маршрута
         private void EditRoute(Route route)
         {
             OpenChildForm(new Forms.EditForms.RouteEdit(_RouteCollection, this, route), null);
         }
 
+        // Удаление маршрута с проверкой связанных рейсов
         private void DeleteRoute(Route route)
         {
-            List<string> delTrans = new List<string>();
-            List<CompletedTransportation> toDelete = [];
+            // Поиск рейсов с этим маршрутом
+            List<CompletedTransportation> toDelete = _VolumeOfTransportation.CompletedTransportations
+                .Where(ct => ct.RouteCode == route)
+                .ToList();
 
-            // Проверяем, есть ли рейсы с этим маршрутом
-            if (_VolumeOfTransportation.CompletedTransportations.Count != 0)
-            {
-                foreach (var completed in _VolumeOfTransportation.CompletedTransportations)
-                {
-                    if (completed.RouteCode == route)
-                    {
-                        toDelete.Add(completed);
-                    }
-                }
+            List<string> delTrans = toDelete
+                .Select(d => d.TransportationDate.ToString("dd.MM.yyyy"))
+                .ToList();
 
-                // Собираем даты рейсов для отображения
-                foreach (var del in toDelete)
-                {
-                    delTrans.Add(del.TransportationDate.ToString("dd.MM.yyyy"));
-                }
-            }
-
-            // Создаем сообщение в зависимости от наличия связанных рейсов
-            string message;
+            // Запрос подтверждения
+            string message = $"Вы уверены, что хотите удалить маршрут {route.Code}?";
             if (delTrans.Count > 0)
-            {
-                message = $"Вы уверены, что хотите удалить маршрут {route.Code}?\n\n" +
-                          $"Будут также удалены рейсы:\n{string.Join("\n", delTrans)}";
-            }
-            else
-            {
-                message = $"Вы уверены, что хотите удалить маршрут {route.Code}?";
-            }
+                message += $"\n\nБудут также удалены рейсы:\n{string.Join("\n", delTrans)}";
 
-            DialogResult result = MessageBox.Show(
-                message,
-                "Подтверждение удаления",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question);
+            DialogResult result = MessageBox.Show(message, "Подтверждение",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
             {
-                // Удаляем связанные рейсы
-                if (toDelete.Count != 0)
-                {
-                    foreach (var del in toDelete)
-                    {
-                        _VolumeOfTransportation.CompletedTransportations.Remove(del);
-                    }
-                }
+                // Удаление связанных рейсов
+                foreach (var del in toDelete)
+                    _VolumeOfTransportation.CompletedTransportations.Remove(del);
 
-                // Удаляем сам маршрут
+                // Удаление маршрута
                 _RouteCollection.Routes.Remove(route);
-                LoadRouteCollection(); // Обновляем список
 
-                // Сообщение об успехе с информацией об удаленных рейсах
+                // Обновление списка
+                LoadRouteCollection();
+
+                // Сообщение об успехе
                 string successMessage = "Маршрут успешно удален";
                 if (delTrans.Count > 0)
-                {
                     successMessage += $". Также удалено {delTrans.Count} рейсов";
-                }
 
                 MessageBox.Show(successMessage, "Успех",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
+
+        // Открытие дочерней формы
         private void OpenChildForm(Form childForm, object btnSender)
         {
             if (ActiveForm != null)
-            {
                 ActiveForm.Close();
-            }
+
             ActiveForm = childForm;
             childForm.TopLevel = false;
             childForm.FormBorderStyle = FormBorderStyle.None;
             childForm.Dock = DockStyle.Top;
+
             this.panelRoutesList.Controls.Clear();
             this.panelRoutesList.Controls.Add(childForm);
-            this.panelRoutesList.Tag = childForm;
             this.panelRoutesMenuTitle.Visible = false;
+
             childForm.BringToFront();
             childForm.Show();
         }
+
+        // Открытие формы добавления нового маршрута
         private void buttonRoutesAdd_Click(object sender, EventArgs e)
         {
             OpenChildForm(new Forms.EditForms.RouteEdit(_RouteCollection, this), sender);
         }
-
     }
 }

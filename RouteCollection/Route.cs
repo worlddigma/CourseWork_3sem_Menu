@@ -5,121 +5,157 @@ using System.Text;
 
 namespace CourseWork_3sem
 {
+    // Класс, представляющий маршрут автобуса
     public class Route
     {
-        // Константы для валидации
+        // Константы для валидации данных маршрута
         public static class Constants
         {
-            // Длины строк
+            // Максимальная длина шифра маршрута
             public const int MaxCodeLength = 20;
+
+            // Минимальная и максимальная длина названия пункта
             public const int MinPointLength = 2;
             public const int MaxPointLength = 50;
 
-            // Время
-            public const int MinDepartureHour = 0;
-            public const int MaxDepartureHour = 23;
-            public const int MinMinute = 0;
-            public const int MaxMinute = 59;
-            public const int MinSecond = 0;
-            public const int MaxSecond = 59;
+            // Диапазон значений для времени
+            public const int MinDepartureHour = 0;     // Минимальный час (полночь)
+            public const int MaxDepartureHour = 23;    // Максимальный час
+            public const int MinMinute = 0;            // Минимальная минута
+            public const int MaxMinute = 59;           // Максимальная минута
+            public const int MinSecond = 0;            // Минимальная секунда
+            public const int MaxSecond = 59;           // Максимальная секунда
+
+            // Максимальное время в пути (в днях)
             public const int MaxTransportationDays = 7;
+
+            // Минимальное время в пути (в минутах)
             public const int MinTransportationMinutes = 1;
 
-            // Количество дней
+            // Минимальное и максимальное количество дней отправления
             public const int MinDepartureDays = 1;
             public const int MaxDepartureDays = 7;
         }
 
-        private string _Code; //                       Шифр 
-        private string _StartingPoint; //              Начальная пункт
-        private string _EndingPoint; //                Конечный пункт
-        private List<string> _IntermediatePoints;//    Промежуточные пункты
-        private DateTime _DepartureTime; //            Время отправления
-        private List<DayOfWeek> _DepartureDays; //        Дни отправления
-        private TimeSpan _TransportationTime; //       Время в пути
+        // Приватные поля для хранения данных маршрута
+        private string _Code;                       // Шифр маршрута
+        private string _StartingPoint;              // Начальный пункт
+        private string _EndingPoint;                // Конечный пункт
+        private List<string> _IntermediatePoints;   // Промежуточные пункты
+        private DateTime _DepartureTime;            // Время отправления
+        private List<DayOfWeek> _DepartureDays;     // Дни отправления
+        private TimeSpan _TransportationTime;       // Время в пути
+
+        // Свойство для шифра маршрута с валидацией
         public string Code
         {
             get => _Code;
             set
             {
-                IsValidCode(value);
-                if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException();
+                IsValidCode(value);  // Валидация шифра
+                if (string.IsNullOrWhiteSpace(value))
+                    throw new ArgumentException("Шифр маршрута не может быть пустым");
                 _Code = value;
             }
         }
+
+        // Свойство для начального пункта с валидацией
         public string StartingPoint
         {
             get => _StartingPoint;
             set
             {
-                IsValidPoint(value, "Начальный пункт");
-                if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException();
+                IsValidPoint(value, "Начальный пункт");  // Валидация пункта
+                if (string.IsNullOrWhiteSpace(value))
+                    throw new ArgumentException("Начальный пункт не может быть пустым");
                 _StartingPoint = value;
             }
         }
+
+        // Свойство для конечного пункта с валидацией
         public string EndingPoint
         {
             get => _EndingPoint;
             set
             {
-                IsValidPoint(value, "Конечный пункт");
-                if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException();
+                IsValidPoint(value, "Конечный пункт");  // Валидация пункта
+                if (string.IsNullOrWhiteSpace(value))
+                    throw new ArgumentException("Конечный пункт не может быть пустым");
                 _EndingPoint = value;
             }
         }
+
+        // Свойство для промежуточных пунктов с валидацией
         public List<string> IntermediatePoints
         {
             get => _IntermediatePoints;
             set
             {
-                IsValidIntermediatePoints(value);
-                if (value.DefaultIfEmpty() == null) throw new ArgumentException();
+                IsValidIntermediatePoints(value);  // Валидация списка промежуточных пунктов
+                if (value == null)
+                    throw new ArgumentException("Список промежуточных пунктов не может быть null");
                 _IntermediatePoints = value;
             }
         }
+
+        // Свойство для дней отправления с валидацией
         public List<DayOfWeek> DepartureDays
         {
             get => _DepartureDays;
             set
             {
-                IsValidDepartureDays(value);
+                IsValidDepartureDays(value);  // Валидация дней отправления
                 _DepartureDays = value;
             }
         }
 
+        // Свойство для времени в пути с валидацией
         public TimeSpan TransportationTime
         {
             get => _TransportationTime;
             set
             {
-                IsValidTransportationTime(value);
+                IsValidTransportationTime(value);  // Валидация времени в пути
                 _TransportationTime = value;
             }
         }
+
+        // Свойство для времени отправления с валидацией
         public DateTime DepartureTime
         {
             get => _DepartureTime;
             set
             {
-                IsValidDepartureTime(value);
-                if (value.Hour < 0 || value.Hour > 23) throw new ArgumentException();
-                if (value.Minute < 0 || value.Minute > 59) throw new ArgumentException();
-                if (value.Second > 59 || value.Second < 0) throw new ArgumentException();
+                IsValidDepartureTime(value);  // Валидация времени отправления
+
+                // Дополнительные проверки времени
+                if (value.Hour < 0 || value.Hour > 23)
+                    throw new ArgumentException("Часы должны быть в диапазоне от 0 до 23");
+                if (value.Minute < 0 || value.Minute > 59)
+                    throw new ArgumentException("Минуты должны быть в диапазоне от 0 до 59");
+                if (value.Second > 59 || value.Second < 0)
+                    throw new ArgumentException("Секунды должны быть в диапазоне от 0 до 59");
+
                 _DepartureTime = value;
             }
         }
 
-        public Route(string code, string startingPoint, string endingPoint, List<string> intermediatePoints, List<DayOfWeek> departureDays, TimeSpan transportationTime, DateTime departureTime)
+        // Конструктор класса Route для инициализации всех полей
+        public Route(string code, string startingPoint, string endingPoint,
+                    List<string> intermediatePoints, List<DayOfWeek> departureDays,
+                    TimeSpan transportationTime, DateTime departureTime)
         {
-            Code = code ?? throw new ArgumentNullException(nameof(code));
-            StartingPoint = startingPoint ?? throw new ArgumentNullException(nameof(startingPoint));
-            EndingPoint = endingPoint ?? throw new ArgumentNullException(nameof(endingPoint));
-            IntermediatePoints = intermediatePoints ?? throw new ArgumentNullException(nameof(intermediatePoints));
+            // Используем свойства для установки значений, чтобы выполнялась валидация
+            Code = code ?? throw new ArgumentNullException(nameof(code), "Шифр маршрута не может быть null");
+            StartingPoint = startingPoint ?? throw new ArgumentNullException(nameof(startingPoint), "Начальный пункт не может быть null");
+            EndingPoint = endingPoint ?? throw new ArgumentNullException(nameof(endingPoint), "Конечный пункт не может быть null");
+            IntermediatePoints = intermediatePoints ?? throw new ArgumentNullException(nameof(intermediatePoints), "Список промежуточных пунктов не может быть null");
             DepartureDays = departureDays;
             TransportationTime = transportationTime;
             DepartureTime = departureTime;
         }
 
+        // Переопределение метода ToString для вывода информации о маршруте
         public override string ToString() =>
     $"Маршрут" +
     $"\n|--Шифр маршрута: {Code}" +
@@ -129,10 +165,13 @@ namespace CourseWork_3sem
     $"\n|--Время отправления: {DepartureTime:HH:mm}" +
     $"\n|--Дни отправления: {string.Join(", ", DaysToRussian(DepartureDays))}" +
     $"\n|--Время в пути: {TransportationTime}";
+
+        // Вспомогательный метод для преобразования дней недели в русские названия
         private static string[] DaysToRussian(List<DayOfWeek> departureDays)
         {
             if (departureDays == null || departureDays.Count == 0)
                 return Array.Empty<string>();
+
             return [.. departureDays.Select(day => day switch
                 {
                     DayOfWeek.Sunday => "Воскресенье",
@@ -148,6 +187,8 @@ namespace CourseWork_3sem
 
 
         // Статические методы валидации
+
+        // Валидация шифра маршрута
         public static void IsValidCode(string code)
         {
             if (string.IsNullOrWhiteSpace(code))
@@ -156,6 +197,8 @@ namespace CourseWork_3sem
             if (code.Length > Constants.MaxCodeLength)
                 throw new ArgumentException($"Шифр маршрута не может превышать 20 символов. Получено: {code.Length}");
         }
+
+        // Валидация пункта (начального, конечного или промежуточного)
         public static void IsValidPoint(string point, string pointName)
         {
             if (string.IsNullOrWhiteSpace(point))
@@ -172,6 +215,7 @@ namespace CourseWork_3sem
                 throw new ArgumentException($"{pointName} содержит недопустимые символы. Допустимы только буквы, цифры, пробелы, дефисы и точки");
         }
 
+        // Валидация списка промежуточных пунктов
         public static void IsValidIntermediatePoints(List<string> intermediatePoints)
         {
             if (intermediatePoints == null)
@@ -189,6 +233,7 @@ namespace CourseWork_3sem
                 throw new ArgumentException("Список промежуточных пунктов содержит дубликаты");
         }
 
+        // Валидация дней отправления
         public static void IsValidDepartureDays(List<DayOfWeek> departureDays)
         {
             if (departureDays == null)
@@ -212,6 +257,7 @@ namespace CourseWork_3sem
                 throw new ArgumentException("Список дней отправления содержит дубликаты");
         }
 
+        // Валидация времени в пути
         public static void IsValidTransportationTime(TimeSpan transportationTime)
         {
             if (transportationTime <= TimeSpan.Zero)
@@ -224,6 +270,7 @@ namespace CourseWork_3sem
                 throw new ArgumentException("Время в пути должно быть не менее 1 минуты. Получено: " + transportationTime);
         }
 
+        // Валидация времени отправления
         public static void IsValidDepartureTime(DateTime departureTime)
         {
             // Проверка времени (часы, минуты, секунды)

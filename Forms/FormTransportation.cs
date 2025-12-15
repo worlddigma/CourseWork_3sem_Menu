@@ -10,14 +10,14 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace CourseWork_3sem_Menu.Forms
-{
+{// Форма для управления выполненными рейсами
     public partial class FormTransportation : Form
     {
-        private RouteCollection _RouteCollection;
-        private DriverStaff _DriverStaff;
-        private BusFleet _BusFleet;
-        private VolumeOfTransportation _VolumeOfTransportation;
-        private Form ActiveForm;
+        private RouteCollection _RouteCollection;           // Список маршрутов
+        private DriverStaff _DriverStaff;                   // Список водителей
+        private BusFleet _BusFleet;                         // Список автобусов
+        private VolumeOfTransportation _VolumeOfTransportation; // Список рейсов
+        private Form ActiveForm;                            // Текущая дочерняя форма
 
         public FormTransportation(RouteCollection routeCollection, BusFleet busFleet,
             DriverStaff driverStaff, VolumeOfTransportation volumeOfTransportation)
@@ -28,20 +28,20 @@ namespace CourseWork_3sem_Menu.Forms
             _DriverStaff = driverStaff;
             _VolumeOfTransportation = volumeOfTransportation;
 
-            // Настраиваем панель для скролла
+            // Настройка скролл-панели
             panelTransportationList.AutoScroll = true;
-            panelTransportationList.AutoScrollMinSize = new Size(0, 0);
-            panelTransportationList.VerticalScroll.Visible = true;
             panelTransportationList.HorizontalScroll.Visible = false;
-            panelTransportationList.AutoScrollMargin = new Size(0, 10);
-            LoadVolumeOfTransportation();
+
+            LoadVolumeOfTransportation(); // Загрузка рейсов
         }
 
+        // Загрузка и отображение списка выполненных рейсов
         public void LoadVolumeOfTransportation()
         {
             panelTransportationList.Controls.Clear();
 
-            if (_VolumeOfTransportation.CompletedTransportations == null ||_VolumeOfTransportation.CompletedTransportations.Count == 0)
+            if (_VolumeOfTransportation.CompletedTransportations == null ||
+                _VolumeOfTransportation.CompletedTransportations.Count == 0)
             {
                 labelNoTransportation.Visible = true;
                 panelTransportationList.Controls.Add(labelNoTransportation);
@@ -49,33 +49,30 @@ namespace CourseWork_3sem_Menu.Forms
             }
 
             labelNoTransportation.Visible = false;
+            int yPosition = 10;
 
-            int yPosition = 10; // Начальная позиция
-
+            // Создание панели для каждого рейса
             foreach (var completedTransportation in _VolumeOfTransportation.CompletedTransportations)
             {
-                Panel completedTransportationPanel = CreateTransportationPanel(completedTransportation, yPosition);
-                panelTransportationList.Controls.Add(completedTransportationPanel);
-
-                yPosition += completedTransportationPanel.Height + 10; // Отступ 
+                Panel panel = CreateTransportationPanel(completedTransportation, yPosition);
+                panelTransportationList.Controls.Add(panel);
+                yPosition += panel.Height + 10;
             }
         }
-        
+
+        // Создание карточки рейса
         private Panel CreateTransportationPanel(CompletedTransportation completedTransportation, int yPosition)
         {
-            // Создаем новую панель для 
             Panel panel = new Panel
             {
                 Size = new Size(panelTransportationList.Width - 25, 120),
                 Location = new Point(10, yPosition),
-                Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top,
                 BackColor = Color.White,
-                
                 BorderStyle = BorderStyle.FixedSingle,
-                Tag = completedTransportation // Сохраняем ссылку 
+                Tag = completedTransportation // Ссылка на объект рейса
             };
 
-            // Информация о маршруте
+            // Информация о рейсе
             Label specsLabel = new Label
             {
                 Text = completedTransportation.ToString(),
@@ -90,7 +87,6 @@ namespace CourseWork_3sem_Menu.Forms
                 Text = "Редактировать",
                 Size = new Size(110, 30),
                 Location = new Point(panel.Width - 220, 80),
-                Anchor = AnchorStyles.Right,
                 BackColor = Color.DarkGray,
                 ForeColor = Color.White,
                 Tag = completedTransportation
@@ -103,7 +99,6 @@ namespace CourseWork_3sem_Menu.Forms
                 Text = "Удалить",
                 Size = new Size(100, 30),
                 Location = new Point(panel.Width - 110, 80),
-                Anchor = AnchorStyles.Right,
                 BackColor = Color.DarkGray,
                 ForeColor = Color.White,
                 Tag = completedTransportation
@@ -116,15 +111,19 @@ namespace CourseWork_3sem_Menu.Forms
 
             return panel;
         }
-        private void EditTransportation(CompletedTransportation completedTransporation)
+
+        // Открытие формы редактирования рейса
+        private void EditTransportation(CompletedTransportation completedTransportation)
         {
-            OpenChildForm(new Forms.EditForms.TransportationEdit(_VolumeOfTransportation, _RouteCollection, _BusFleet, _DriverStaff, this, completedTransporation), null);
+            OpenChildForm(new Forms.EditForms.TransportationEdit(_VolumeOfTransportation,
+                _RouteCollection, _BusFleet, _DriverStaff, this, completedTransportation), null);
         }
 
+        // Удаление рейса
         private void DeleteTransportation(CompletedTransportation completed)
         {
             DialogResult result = MessageBox.Show(
-                $"Вы уверены, что хотите удалить рейс {completed.TransportationDate.Date}?",
+                $"Вы уверены, что хотите удалить рейс от {completed.TransportationDate:dd.MM.yyyy}?",
                 "Подтверждение удаления",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question);
@@ -132,32 +131,37 @@ namespace CourseWork_3sem_Menu.Forms
             if (result == DialogResult.Yes)
             {
                 _VolumeOfTransportation.CompletedTransportations.Remove(completed);
-                LoadVolumeOfTransportation(); // Обновляем список
+                LoadVolumeOfTransportation(); // Обновление списка
+
                 MessageBox.Show("Рейс успешно удален", "Успех",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
+
+        // Открытие дочерней формы
         private void OpenChildForm(Form childForm, object btnSender)
-        {   
+        {
             if (ActiveForm != null)
-            {
                 ActiveForm.Close();
-            }
+
             ActiveForm = childForm;
             childForm.TopLevel = false;
             childForm.FormBorderStyle = FormBorderStyle.None;
             childForm.Dock = DockStyle.Top;
+
             this.panelTransportationList.Controls.Clear();
             this.panelTransportationList.Controls.Add(childForm);
-            this.panelTransportationList.Tag = childForm;
             this.panelTransportationMenuTitle.Visible = false;
+
             childForm.BringToFront();
             childForm.Show();
         }
+
+        // Открытие формы добавления нового рейса
         private void buttonTransportationAdd_Click(object sender, EventArgs e)
         {
-            OpenChildForm(new Forms.EditForms.TransportationEdit(_VolumeOfTransportation, _RouteCollection, _BusFleet, _DriverStaff, this), sender);
+            OpenChildForm(new Forms.EditForms.TransportationEdit(_VolumeOfTransportation,
+                _RouteCollection, _BusFleet, _DriverStaff, this), sender);
         }
-
     }
 }

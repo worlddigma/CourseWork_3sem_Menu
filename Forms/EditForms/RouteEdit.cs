@@ -12,33 +12,50 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace CourseWork_3sem_Menu.Forms.EditForms
 {
+    // Форма для добавления/редактирования маршрута
     public partial class RouteEdit : Form
     {
-        private RouteCollection _RouteCollection;
-        private FormRoutes parentForm;
-        private Route _Route;
-        private Dictionary<string, DayOfWeek> _russianDaysMapping = new Dictionary<string, DayOfWeek>
-{
-    { "Понедельник", DayOfWeek.Monday },
-    { "Вторник", DayOfWeek.Tuesday },
-    { "Среда", DayOfWeek.Wednesday },
-    { "Четверг", DayOfWeek.Thursday },
-    { "Пятница", DayOfWeek.Friday },
-    { "Суббота", DayOfWeek.Saturday },
-    { "Воскресенье", DayOfWeek.Sunday }
-};
+        private RouteCollection _RouteCollection;  // Коллекция маршрутов
+        private FormRoutes parentForm;             // Родительская форма
+        private Route _Route;                      // Редактируемый маршрут (null при добавлении)
+
+        // Сопоставление русских названий дней недели с enum DayOfWeek
+        private Dictionary<string, DayOfWeek> _russianDaysMapping = new()
+    {
+        { "Понедельник", DayOfWeek.Monday },
+        { "Вторник", DayOfWeek.Tuesday },
+        { "Среда", DayOfWeek.Wednesday },
+        { "Четверг", DayOfWeek.Thursday },
+        { "Пятница", DayOfWeek.Friday },
+        { "Суббота", DayOfWeek.Saturday },
+        { "Воскресенье", DayOfWeek.Sunday }
+    };
+
+        // Конструктор для редактирования существующего маршрута
         public RouteEdit(RouteCollection RouteCollection, FormRoutes parent, Route Route)
         {
             InitializeComponent();
             _RouteCollection = RouteCollection;
             parentForm = parent;
             _Route = Route;
+
+            // Заполнение полей данными редактируемого маршрута
             textBoxCode.Text = _Route.Code;
             textBoxStartingPoint.Text = _Route.StartingPoint;
             textBoxEndingPoint.Text = _Route.EndingPoint;
-            textBoxIntermediatePoints.Text = _Route.IntermediatePoints.ToArray().ToString();
+
+            // Промежуточные пункты (через запятую)
+            textBoxIntermediatePoints.Text = _Route.IntermediatePoints != null
+                ? string.Join(", ", _Route.IntermediatePoints)
+                : string.Empty;
+
             dateTimePickerDepartureTime.Value = _Route.DepartureTime;
-            dateTimePickerTransportationTimeHours.Value += _Route.TransportationTime;
+
+            // Время транспортировки (дни + часы/минуты)
+            textBoxTransportationTimeDay.Text = ((int)_Route.TransportationTime.TotalDays).ToString();
+            dateTimePickerTransportationTimeHours.Value = DateTime.Today.Add(_Route.TransportationTime - TimeSpan.FromDays((int)_Route.TransportationTime.TotalDays));
+
+            // Установка дней отправления
             for (int i = 0; i < checkedListBoxDepartureDays.Items.Count; i++)
             {
                 string russianDayName = checkedListBoxDepartureDays.Items[i].ToString();
@@ -48,253 +65,176 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
                 }
             }
         }
+
+        // Конструктор для добавления нового маршрута
         public RouteEdit(RouteCollection RouteCollection, FormRoutes parent)
         {
             InitializeComponent();
             _RouteCollection = RouteCollection;
             parentForm = parent;
+
+            // Значения по умолчанию
+            textBoxTransportationTimeDay.Text = "0";
+            dateTimePickerTransportationTimeHours.Value = DateTime.Today.AddHours(1);
+            dateTimePickerDepartureTime.Value = DateTime.Today.AddHours(8);
         }
 
-        private void buttonDisChanges_Click(object sender, EventArgs e)
-        {
-
-            this.parentForm.LoadRouteCollection();
-            this.parentForm.BringToFront();
-            this.parentForm.Show();
-            this.parentForm.panelRoutesMenuTitle.Show();
-            this.Close();
-        }
-
-
-
-        private void textBoxCode_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (char.IsControl(e.KeyChar))
-            {
-                return;
-            }
-            if (e.KeyChar == (char)Keys.Enter)
-            {
-                textBoxStartingPoint.Focus();
-            }
-            if (!char.IsDigit(e.KeyChar) && !char.IsLetter(e.KeyChar))
-            {
-                e.Handled = true;
-                return;
-            }
-        }
-
-        private void textBoxStartingPoint_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (char.IsControl(e.KeyChar))
-            {
-                return;
-            }
-            if (e.KeyChar == (char)Keys.Enter)
-            {
-                textBoxEndingPoint.Focus();
-            }
-            if (!char.IsDigit(e.KeyChar) && !char.IsLetter(e.KeyChar))
-            {
-                e.Handled = true;
-                return;
-            }
-        }
-
-        private void textBoxEndingPoint_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (char.IsControl(e.KeyChar))
-            {
-                return;
-            }
-            if (e.KeyChar == (char)Keys.Enter)
-            {
-                textBoxIntermediatePoints.Focus();
-            }
-            if (!char.IsDigit(e.KeyChar) && !char.IsLetter(e.KeyChar))
-            {
-                e.Handled = true;
-                return;
-            }
-        }
-
-        private void textBoxIntermediatePoints_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (char.IsControl(e.KeyChar))
-            {
-                return;
-            }
-            if (e.KeyChar == (char)Keys.Enter)
-            {
-                dateTimePickerDepartureTime.Focus();
-            }
-            if (!char.IsDigit(e.KeyChar) && !char.IsLetter(e.KeyChar) && e.KeyChar != ',' && e.KeyChar != ' ')
-            {
-                e.Handled = true;
-                return;
-            }
-        }
-
+        // Сохранение изменений
         private void buttonSaveChanges_Click(object sender, EventArgs e)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(textBoxCode.Text))
+                // Валидация обязательных полей
+                if (string.IsNullOrWhiteSpace(textBoxCode.Text) ||
+                    string.IsNullOrWhiteSpace(textBoxStartingPoint.Text) ||
+                    string.IsNullOrWhiteSpace(textBoxEndingPoint.Text))
                 {
-                    throw new Exception("Поле с шифром маршрута не может быть пустым");
-                }
-                if (string.IsNullOrWhiteSpace(textBoxStartingPoint.Text))
-                {
-                    throw new Exception("Поле с начальным пунктом не может быть пустым");
-                }
-                if (string.IsNullOrWhiteSpace(textBoxEndingPoint.Text))
-                {
-                    throw new Exception("Поле с конечным пунктом не может быть пустым!");
-                }
-                if (string.IsNullOrWhiteSpace(textBoxTransportationTimeDay.Text))
-                {
-                    throw new Exception("Поле с количеством дней не может быть пустым!");
+                    throw new Exception("Заполните все обязательные поля.");
                 }
 
+                // Валидация через статические методы класса Route
                 Route.IsValidCode(textBoxCode.Text.Trim());
                 Route.IsValidPoint(textBoxStartingPoint.Text.Trim(), "Начальный пункт");
                 Route.IsValidPoint(textBoxEndingPoint.Text.Trim(), "Конечный пункт");
 
-                // Получаем и валидируем промежуточные пункты
+                // Получение и валидация промежуточных пунктов
                 List<string> intermediatePoints = GetIntermediatePoints();
                 Route.IsValidIntermediatePoints(intermediatePoints);
 
-                // Получаем и валидируем дни отправления
+                // Получение и валидация дней отправления
                 List<DayOfWeek> departureDays = GetDepartureDays();
                 Route.IsValidDepartureDays(departureDays);
 
-                if (textBoxTransportationTimeDay.Text == null)
-                {
-                    textBoxTransportationTimeDay.Text = "1";
-                }
-                // Валидация времени
-                TimeSpan transportationTime = dateTimePickerTransportationTimeHours.Value.TimeOfDay + new TimeSpan(0, int.Parse(textBoxTransportationTimeDay.Text), 0);
-                DateTime departureTime = dateTimePickerDepartureTime.Value;
+                // Получение и валидация времени транспортировки
+                if (!int.TryParse(textBoxTransportationTimeDay.Text, out int days) || days < 0)
+                    throw new Exception("Дни транспортировки должны быть неотрицательным числом.");
+
+                TimeSpan hoursPart = dateTimePickerTransportationTimeHours.Value.TimeOfDay;
+                TimeSpan transportationTime = TimeSpan.FromDays(days).Add(hoursPart);
                 Route.IsValidTransportationTime(transportationTime);
+
+                // Валидация времени отправления
+                DateTime departureTime = dateTimePickerDepartureTime.Value;
                 Route.IsValidDepartureTime(departureTime);
-                if (_Route == null)
-                {
-                    // Проверка на дубликат государственного номера
-                    if (_RouteCollection.Routes.Any(route => route.Code.Equals(textBoxCode.Text.Trim(), StringComparison.OrdinalIgnoreCase)))
-                    {
-                        MessageBox.Show("Маршрут с таким шифром уже существует.", "Ошибка",
-                            MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
 
-                    // Создание и добавление автобуса
-                    Route route = new Route(
-            textBoxCode.Text.Trim(),
-            textBoxStartingPoint.Text.Trim(),
-            textBoxEndingPoint.Text.Trim(),
-            intermediatePoints,
-            departureDays,
-            transportationTime,
-            departureTime
-        );
+                // Проверка уникальности шифра маршрута (при добавлении)
+                string code = textBoxCode.Text.Trim();
+                if (_Route == null && _RouteCollection.Routes.Any(r => r.Code.Equals(code, StringComparison.OrdinalIgnoreCase)))
+                    throw new Exception("Маршрут с таким шифром уже существует.");
+
+                if (_Route == null) // Добавление нового маршрута
+                {
+                    Route route = new Route(code, textBoxStartingPoint.Text.Trim(),
+                        textBoxEndingPoint.Text.Trim(), intermediatePoints, departureDays,
+                        transportationTime, departureTime);
                     _RouteCollection.Routes.Add(route);
-
-                    MessageBox.Show("Маршрут успешно добавлен!", "Успех",
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
-
+                    MessageBox.Show("Маршрут успешно добавлен!", "Успех");
                 }
-                else
+                else // Редактирование существующего
                 {
-                    _Route.Code = textBoxCode.Text;
-                    _Route.StartingPoint = textBoxStartingPoint.Text;
-                    _Route.EndingPoint = textBoxEndingPoint.Text;
+                    _Route.Code = code;
+                    _Route.StartingPoint = textBoxStartingPoint.Text.Trim();
+                    _Route.EndingPoint = textBoxEndingPoint.Text.Trim();
                     _Route.IntermediatePoints = intermediatePoints;
-                    _Route.DepartureTime = departureTime;
                     _Route.DepartureDays = departureDays;
                     _Route.TransportationTime = transportationTime;
-                    MessageBox.Show("Маршрут успешно изменен!", "Успех",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    _Route.DepartureTime = departureTime;
+                    MessageBox.Show("Маршрут успешно изменен!", "Успех");
                 }
 
-                ClearForm();
-
-                this.parentForm.LoadRouteCollection();
-                this.parentForm.BringToFront();
-                this.parentForm.Show();
-                this.parentForm.panelRoutesMenuTitle.Show();
+                // Закрытие формы и обновление родительской формы
+                parentForm.LoadRouteCollection();
+                parentForm.panelRoutesMenuTitle.Show();
                 this.Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Ошибка сохранения маршрута");
+                MessageBox.Show(ex.Message, "Ошибка");
             }
         }
+
+        // Отмена изменений
+        private void buttonDisChanges_Click(object sender, EventArgs e)
+        {
+            parentForm.LoadRouteCollection();
+            parentForm.panelRoutesMenuTitle.Show();
+            this.Close();
+        }
+
+        // Получение списка промежуточных пунктов из текстового поля
         private List<string> GetIntermediatePoints()
         {
+            if (string.IsNullOrWhiteSpace(textBoxIntermediatePoints.Text))
+                return new List<string>();
+
             return textBoxIntermediatePoints.Text
-                .Split(new[] { '\r', '\n', ',' }, StringSplitOptions.RemoveEmptyEntries)
+                .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                 .Select(p => p.Trim())
                 .Where(p => !string.IsNullOrWhiteSpace(p))
                 .ToList();
         }
 
-        // Метод для получения дней отправления
+        // Получение списка дней отправления из CheckedListBox
         private List<DayOfWeek> GetDepartureDays()
         {
             List<DayOfWeek> days = new List<DayOfWeek>();
-            foreach (string day in checkedListBoxDepartureDays.CheckedItems)
+            foreach (string checkedItem in checkedListBoxDepartureDays.CheckedItems)
             {
-                switch (day)
-                {
-                    case "Понедельник": { days.Add(DayOfWeek.Monday); break; }
-                    case "Вторник": { days.Add(DayOfWeek.Tuesday); break; }
-                    case "Среда": { days.Add(DayOfWeek.Wednesday); break; }
-                    case "Четверг": { days.Add(DayOfWeek.Thursday); break; }
-                    case "Пятница": { days.Add(DayOfWeek.Friday); break; }
-                    case "Суббота": { days.Add(DayOfWeek.Saturday); break; }
-                    case "Воскресенье": { days.Add(DayOfWeek.Sunday); break; }
-                }
+                if (_russianDaysMapping.TryGetValue(checkedItem, out DayOfWeek day))
+                    days.Add(day);
             }
             return days;
         }
 
-        // Метод очистки формы
-        private void ClearForm()
+        // Обработчики валидации ввода
+
+        private void textBoxCode_KeyPress(object sender, KeyPressEventArgs e)
         {
-            textBoxCode.Clear();
-            textBoxStartingPoint.Clear();
-            textBoxEndingPoint.Clear();
-            textBoxIntermediatePoints.Clear();
+            // Разрешаем буквы, цифры и Enter для перехода между полями
+            if (!char.IsControl(e.KeyChar) && !char.IsLetterOrDigit(e.KeyChar))
+                e.Handled = true;
 
-            // Сброс выбранных дней
-            for (int i = 0; i < checkedListBoxDepartureDays.Items.Count; i++)
-            {
-                checkedListBoxDepartureDays.SetItemChecked(i, false);
-            }
+            if (e.KeyChar == (char)Keys.Enter)
+                textBoxStartingPoint.Focus();
+        }
 
-            // Установка времени по умолчанию
-            dateTimePickerTransportationTimeHours.Value = DateTime.Today.AddHours(1); // 1 час по умолчанию
-            dateTimePickerDepartureTime.Value = DateTime.Today.AddHours(8); // 8:00 по умолчанию
+        private void textBoxStartingPoint_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsLetterOrDigit(e.KeyChar))
+                e.Handled = true;
+
+            if (e.KeyChar == (char)Keys.Enter)
+                textBoxEndingPoint.Focus();
+        }
+
+        private void textBoxEndingPoint_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsLetterOrDigit(e.KeyChar))
+                e.Handled = true;
+
+            if (e.KeyChar == (char)Keys.Enter)
+                textBoxIntermediatePoints.Focus();
+        }
+
+        private void textBoxIntermediatePoints_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Разрешаем буквы, цифры, запятые и пробелы для списка пунктов
+            if (!char.IsControl(e.KeyChar) && !char.IsLetterOrDigit(e.KeyChar) && e.KeyChar != ',' && e.KeyChar != ' ')
+                e.Handled = true;
+
+            if (e.KeyChar == (char)Keys.Enter)
+                dateTimePickerDepartureTime.Focus();
         }
 
         private void textBoxTransportationTimeDay_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (char.IsControl(e.KeyChar))
-            {
-                return;
-            }
-            if (!char.IsDigit(e.KeyChar))
-            {
+            // Разрешаем только цифры для дней транспортировки
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
                 e.Handled = true;
-                return;
-            }
 
-            System.Windows.Forms.TextBox textBox = (System.Windows.Forms.TextBox)sender;
-            string newText = textBox.Text + e.KeyChar;
-            if (int.TryParse(newText, out int result) && result > Route.Constants.MaxDepartureDays)
-            {
+            string newText = textBoxTransportationTimeDay.Text + e.KeyChar;
+            if (int.TryParse(newText, out int days) && days > Route.Constants.MaxTransportationDays)
                 e.Handled = true;
-            }
         }
     }
 }

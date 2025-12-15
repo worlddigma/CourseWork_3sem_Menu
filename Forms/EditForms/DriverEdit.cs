@@ -12,31 +12,39 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace CourseWork_3sem_Menu.Forms.EditForms
 {
+    // Форма для добавления/редактирования водителя
     public partial class DriverEdit : Form
     {
-        private Class _Class;
-        private DriverStaff _DriverStaff;
-        private Driver _Driver;
-        private FormDrivers parentForm;
+        private Class _Class;              // Класс водителя
+        private DriverStaff _DriverStaff;  // Коллекция водителей
+        private Driver _Driver;            // Редактируемый водитель (null при добавлении)
+        private FormDrivers parentForm;    // Родительская форма
+
+        // Конструктор для редактирования существующего водителя
         public DriverEdit(DriverStaff driverStaff, FormDrivers parent, Driver driver)
         {
             InitializeComponent();
             parentForm = parent;
             _DriverStaff = driverStaff;
+
+            // Заполнение полей данными редактируемого водителя
             textBoxName.Text = driver.Name.ToString();
             textBoxId.Text = driver.Id.ToString();
             dateTimePickerDateOfBirth.Value = driver.DateOfBirth;
             textBoxWorkExperience.Text = driver.WorkExperience.ToString();
+
+            // Установка категории прав
             if (driver.Category == Category.D) checkedListBoxCategory.SetItemChecked(0, true);
             else checkedListBoxCategory.SetItemChecked(1, true);
-            if (driver.Class == Class.Class1) _Class = Class.Class1;
-            if (driver.Class == Class.Class2) _Class = Class.Class2;
-            if (driver.Class == Class.Class3) _Class = Class.Class3;
+
+            // Установка класса водителя
+            _Class = driver.Class;
             _Driver = driver;
 
             labelChosenClass.Text = $"Класс: {(int)_Class}";
         }
 
+        // Конструктор для добавления нового водителя
         public DriverEdit(DriverStaff driverStaff, FormDrivers parent)
         {
             InitializeComponent();
@@ -45,253 +53,174 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
             _Driver = null;
         }
 
-
+        // Автоматический выбор класса водителя на основе опыта работы
         private void buttonChooseClass_Click(object sender, EventArgs e)
         {
             try
             {
+                if (!int.TryParse(textBoxWorkExperience.Text, out int experience) || experience < 0)
+                    throw new ArgumentException("Опыт работы должен быть положительным числом.");
 
-                if (int.Parse(textBoxWorkExperience.Text) < 0)
-                    throw new ArgumentException("Опыт работы не может быть отрицательным.");
-
-                if (int.Parse(textBoxWorkExperience.Text) == 0) _Class = Class.Class3;
-
-                DialogResult result = MessageBox.Show(
-                    "Имеет ли водитель нарушения ПДД?",
-                    "Выбор",
-                   MessageBoxButtons.YesNo,
-                   MessageBoxIcon.Question);
-
-                if (int.Parse(textBoxWorkExperience.Text) < 5)
+                // Определение класса по опыту работы и нарушениям ПДД
+                if (experience == 0)
                 {
-                    if (result == DialogResult.Yes) _Class = Class.Class3;
-                    else _Class = Class.Class2;
+                    _Class = Class.Class3;
                 }
                 else
                 {
-                    if (result == DialogResult.Yes) _Class = Class.Class2;
-                    else _Class = Class.Class1;
+                    DialogResult result = MessageBox.Show(
+                        "Имеет ли водитель нарушения ПДД?", "Выбор",
+                        MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                    bool hasViolations = result == DialogResult.Yes;
+
+                    _Class = (experience, hasViolations) switch
+                    {
+                        ( < 5, true) => Class.Class3,
+                        ( < 5, false) => Class.Class2,
+                        ( >= 5, true) => Class.Class2,
+                        ( >= 5, false) => Class.Class1
+                    };
                 }
 
                 labelChosenClass.Text = $"Класс: {(int)_Class}";
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"{ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Ошибка");
             }
         }
 
-        private void textName_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (char.IsControl(e.KeyChar))
-            {
-                return;
-            }
-            if (!char.IsLetter(e.KeyChar) && e.KeyChar != ' ')
-            {
-                e.Handled = true;
-                return;
-            }
-        }
-
-        private void textBoxId_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (char.IsControl(e.KeyChar))
-            {
-                return;
-            }
-            if (!char.IsDigit(e.KeyChar))
-            {
-                e.Handled = true;
-                return;
-            }
-        }
-
-        private void textBoxWorkExperience_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (char.IsControl(e.KeyChar))
-            {
-                return;
-            }
-            if (!char.IsDigit(e.KeyChar))
-            {
-                e.Handled = true;
-                return;
-            }
-            System.Windows.Forms.TextBox textBox = (System.Windows.Forms.TextBox)sender;
-
-            string newText = textBox.Text + e.KeyChar;
-            if (int.TryParse(newText, out int result))
-            {
-                int currentYear = DateTime.Now.Year;
-
-                if (newText.Length == 2 && result > (currentYear - dateTimePickerDateOfBirth.Value.Year))
-                {
-                    e.Handled = true;
-                    return;
-                }
-
-            }
-        }
-
-        private void buttonDisChanges_Click(object sender, EventArgs e)
-        {
-            this.parentForm.LoadDriverStaff();
-            this.parentForm.BringToFront();
-            this.parentForm.Show();
-            this.parentForm.panelDriversMenuTitle.Show();
-            this.Close();
-        }
-
+        // Сохранение изменений
         private void buttonSaveChanges_Click(object sender, EventArgs e)
         {
             try
             {
-                // Проверки на пустые поля
-                if (string.IsNullOrWhiteSpace(textBoxName.Text))
+                // Валидация обязательных полей
+                if (string.IsNullOrWhiteSpace(textBoxName.Text) ||
+                    string.IsNullOrWhiteSpace(textBoxId.Text) ||
+                    string.IsNullOrWhiteSpace(textBoxWorkExperience.Text))
                 {
-                    throw new Exception("Поле с ФИО не может быть пустым");
-                }
-                if (string.IsNullOrWhiteSpace(textBoxId.Text))
-                {
-                    throw new Exception("Поле с табельным номером не может быть пустым");
-                }
-                if (string.IsNullOrWhiteSpace(textBoxWorkExperience.Text))
-                {
-                    throw new Exception("Поле с опытом работы не может быть пустым!");
+                    throw new Exception("Все обязательные поля должны быть заполнены.");
                 }
 
-                // Проверка выбора категории
                 if (checkedListBoxCategory.CheckedItems.Count == 0)
-                {
-                    throw new Exception("Необходимо выбрать категорию прав!");
-                }
+                    throw new Exception("Необходимо выбрать категорию прав.");
 
-                // Проверка выбора класса водителя
                 if (_Class == null)
-                {
-                    throw new Exception("Необходимо выбрать класс водителя!");
-                }
+                    throw new Exception("Необходимо выбрать класс водителя.");
 
-                // Проверка и создание ФИО
-                string[] Name = textBoxName.Text.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                string Patronomyc = "";
-                if (Name.Length == 3) Patronomyc = Name[2];
-                if (Name.Length != 3)
-                {
-                    if (Name.Length != 2)
-                        throw new Exception("ФИО должно содержать фамилию, имя и отчество через пробел");
-                }
-                FullName fullName = new(Name[0], Name[1], Patronomyc);
-                // Проверки через статические методы класса Driver
-                Driver.IsValidName(fullName);
-                Driver.IsValidId(int.Parse(textBoxId.Text));
-                Driver.IsValidDateOfBirth(dateTimePickerDateOfBirth.Value.Date);
-                Driver.IsValidWorkExperience(int.Parse(textBoxWorkExperience.Text), dateTimePickerDateOfBirth.Value.Date);
+                // Парсинг и валидация ФИО
+                string[] nameParts = textBoxName.Text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (nameParts.Length < 2)
+                    throw new Exception("ФИО должно содержать фамилию и имя.");
 
-                // Получение и проверка категории
+                string patronymic = nameParts.Length == 3 ? nameParts[2] : "";
+                FullName fullName = new(nameParts[0], nameParts[1], patronymic);
+
+                // Парсинг числовых значений
+                if (!int.TryParse(textBoxId.Text, out int id) ||
+                    !int.TryParse(textBoxWorkExperience.Text, out int experience))
+                    throw new Exception("Некорректные числовые значения.");
+
+                // Получение категории прав
                 Category category = GetCategory();
-                Driver.IsValidCategory(category);
 
-                // Проверка класса
+                // Валидация данных через статические методы класса Driver
+                Driver.IsValidName(fullName);
+                Driver.IsValidId(id);
+                Driver.IsValidDateOfBirth(dateTimePickerDateOfBirth.Value);
+                Driver.IsValidWorkExperience(experience, dateTimePickerDateOfBirth.Value);
+                Driver.IsValidCategory(category);
                 Driver.IsValidClass(_Class);
 
-                if (_Driver == null)
-                {
-                    // Проверка на дубликат табельного номера
-                    if (_DriverStaff.Drivers.Any(driver => driver.Id == int.Parse(textBoxId.Text)))
-                    {
-                        MessageBox.Show("Водитель с таким табельным номером уже существует.", "Ошибка",
-                            MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
+                // Проверка уникальности табельного номера (при добавлении)
+                if (_Driver == null && _DriverStaff.Drivers.Any(d => d.Id == id))
+                    throw new Exception("Водитель с таким табельным номером уже существует.");
 
-                    // Создание и добавление водителя
-                    Driver driver = new Driver(
-                        fullName,
-                        int.Parse(textBoxId.Text),
-                        dateTimePickerDateOfBirth.Value.Date,
-                        int.Parse(textBoxWorkExperience.Text),
-                        category,
-                        _Class
-                    );
+                if (_Driver == null) // Добавление нового водителя
+                {
+                    Driver driver = new Driver(fullName, id, dateTimePickerDateOfBirth.Value,
+                                             experience, category, _Class);
                     _DriverStaff.Drivers.Add(driver);
-
-                    MessageBox.Show("Водитель успешно добавлен!", "Успех",
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Водитель успешно добавлен!", "Успех");
                 }
-                else
+                else // Редактирование существующего
                 {
-                    // Обновление существующего водителя
-                    _Driver.Id = int.Parse(textBoxId.Text);
-                    _Driver.WorkExperience = int.Parse(textBoxWorkExperience.Text);
-                    _Driver.Class = _Class;
                     _Driver.Name = fullName;
+                    _Driver.Id = id;
                     _Driver.DateOfBirth = dateTimePickerDateOfBirth.Value;
+                    _Driver.WorkExperience = experience;
                     _Driver.Category = category;
-
-                    MessageBox.Show("Водитель успешно изменен!", "Успех",
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    _Driver.Class = _Class;
+                    MessageBox.Show("Водитель успешно изменен!", "Успех");
                 }
 
-                ClearForm();
-                this.parentForm.LoadDriverStaff();
-                this.parentForm.BringToFront();
-                this.parentForm.Show();
-                this.parentForm.panelDriversMenuTitle.Show();
+                // Закрытие формы и обновление родительской формы
+                parentForm.LoadDriverStaff();
+                parentForm.panelDriversMenuTitle.Show();
                 this.Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Ошибка сохранения водителя");
+                MessageBox.Show(ex.Message, "Ошибка");
             }
         }
 
-        private void ClearForm()
+        // Отмена изменений
+        private void buttonDisChanges_Click(object sender, EventArgs e)
         {
-            // Очистка текстовых полей
-            textBoxName.Clear();
-            textBoxId.Clear();
-            textBoxWorkExperience.Clear();
-
-            // Сброс выбранной категории в CheckedListBox
-            for (int i = 0; i < checkedListBoxCategory.Items.Count; i++)
-            {
-                checkedListBoxCategory.SetItemChecked(i, false);
-            }
-
-            // Установка даты рождения по умолчанию (например, 18 лет назад)
-            dateTimePickerDateOfBirth.Value = DateTime.Today.AddYears(-18);
-
-            // Сброс класса водителя
-            _Class = Class.Class3; // или значение по умолчанию
-
-            _Driver = null;
-            // Установка фокуса на первое поле
-            textBoxName.Focus();
+            parentForm.LoadDriverStaff();
+            parentForm.panelDriversMenuTitle.Show();
+            this.Close();
         }
+
+        // Получение выбранной категории прав
         private Category GetCategory()
         {
-            string category = checkedListBoxCategory.Text;
-            switch (category)
+            return checkedListBoxCategory.CheckedIndices[0] == 0 ? Category.D : Category.E;
+        }
+
+        // Обработчики валидации ввода
+
+        private void textName_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Разрешаем только буквы и пробелы
+            if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar) && e.KeyChar != ' ')
+                e.Handled = true;
+        }
+
+        private void textBoxId_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Разрешаем только цифры
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+                e.Handled = true;
+        }
+
+        private void textBoxWorkExperience_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Разрешаем только цифры с проверкой максимального возраста
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+                e.Handled = true;
+
+            string newText = textBoxWorkExperience.Text + e.KeyChar;
+            if (int.TryParse(newText, out int experience))
             {
-                case "D": return Category.D;
-                case "E": return Category.E;
-                default:
-                    return Category.D;
+                int age = DateTime.Now.Year - dateTimePickerDateOfBirth.Value.Year;
+                if (experience > Math.Max(0, age - 18)) // Максимальный опыт = возраст - 18
+                    e.Handled = true;
             }
         }
 
+        // Обеспечение выбора только одной категории прав
         private void checkedListBoxCategory_ItemCheck(object sender, ItemCheckEventArgs e)
         {
             if (e.NewValue == CheckState.Checked)
             {
-                for (int i = 0; i < checkedListBoxCategory.CheckedItems.Count; i++)
+                for (int i = 0; i < checkedListBoxCategory.Items.Count; i++)
                 {
-                    if (i != e.Index && checkedListBoxCategory.GetItemChecked(i))
-                    {
+                    if (i != e.Index)
                         checkedListBoxCategory.SetItemChecked(i, false);
-                    }
                 }
             }
         }

@@ -128,12 +128,13 @@
             // labelLogo
             // 
             labelLogo.AutoSize = true;
+            labelLogo.Font = new Font("SimSun-ExtG", 16F);
             labelLogo.ForeColor = SystemColors.ButtonHighlight;
-            labelLogo.Location = new Point(12, 9);
+            labelLogo.Location = new Point(26, 13);
             labelLogo.Name = "labelLogo";
-            labelLogo.Size = new Size(67, 30);
+            labelLogo.Size = new Size(58, 22);
             labelLogo.TabIndex = 0;
-            labelLogo.Text = "Система\r\n перевозок";
+            labelLogo.Text = "СУПА";
             // 
             // panelTitleBar
             // 
@@ -177,7 +178,7 @@
             ForeColor = SystemColors.ControlDarkDark;
             KeyPreview = true;
             Name = "StartingMenu";
-            Text = "Passanger Control System";
+            Text = "Система учета пассажирских автоперевозок";
             FormClosing += StartingMenu_FormClosing;
             panelMenu.ResumeLayout(false);
             panelLogo.ResumeLayout(false);

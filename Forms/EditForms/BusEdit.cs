@@ -11,18 +11,22 @@ using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace CourseWork_3sem_Menu.Forms.EditForms
-{
+{// Форма для добавления/редактирования автобуса
     public partial class BusEdit : Form
     {
-        private BusFleet _BusFleet;
-        private FormBuses parentForm;
-        private Bus _Bus;
+        private BusFleet _BusFleet;        // Коллекция автобусов
+        private FormBuses parentForm;      // Родительская форма
+        private Bus _Bus;                  // Редактируемый автобус (null при добавлении)
+
+        // Конструктор для редактирования существующего автобуса
         public BusEdit(BusFleet busFleet, FormBuses parent, Bus bus)
         {
             InitializeComponent();
             _BusFleet = busFleet;
             parentForm = parent;
             _Bus = bus;
+
+            // Заполнение полей данными редактируемого автобуса
             textBoxStateNumber.Text = bus.StateNumber;
             textBoxBrand.Text = bus.Brand;
             textBoxModel.Text = bus.Model;
@@ -30,9 +34,16 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
             textBoxYear.Text = bus.Year.ToString();
             textBoxYearOfRepair.Text = bus.YearOfMajorRepair.ToString();
             textBoxMilleage.Text = bus.Mileage.ToString();
-            if (!string.IsNullOrWhiteSpace(bus.Photo)) pictureBoxBusImage.Image = Image.FromFile(bus.Photo);
 
+            // Загрузка изображения, если оно существует
+            if (!string.IsNullOrWhiteSpace(bus.Photo) && System.IO.File.Exists(bus.Photo))
+            {
+                pictureBoxBusImage.Image = Image.FromFile(bus.Photo);
+                pictureBoxBusImage.Tag = bus.Photo; // Сохраняем путь к файлу
+            }
         }
+
+        // Конструктор для добавления нового автобуса
         public BusEdit(BusFleet busFleet, FormBuses parent)
         {
             InitializeComponent();
@@ -40,153 +51,73 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
             parentForm = parent;
         }
 
+        // Выбор изображения автобуса
         private void buttonAddImage_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
                 openFileDialog.Filter = "Image Files | *.jpg;*.png;*.jpeg;*.bmp;";
-                openFileDialog.Title = "Выберите изображение";
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    try
-                    {
-                        pictureBoxBusImage.Image = Image.FromFile(openFileDialog.FileName);
-                        pictureBoxBusImage.Name = openFileDialog.FileName;
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Ошибка загрузки изображения: {ex.Message}");
-                    }
+                    pictureBoxBusImage.Image = Image.FromFile(openFileDialog.FileName);
+                    pictureBoxBusImage.Tag = openFileDialog.FileName; // Сохраняем путь
                 }
             }
         }
 
+        // Удаление изображения
         private void buttonDelImage_Click(object sender, EventArgs e)
         {
-            if (pictureBoxBusImage.Image == null)
-            {
-                MessageBox.Show("Нет изображения для удаления");
-                return;
-            }
             pictureBoxBusImage.Image = null;
-            pictureBoxBusImage.Name = null;
+            pictureBoxBusImage.Tag = null;
         }
 
+        // Сохранение изменений
         private void buttonSaveChanges_Click(object sender, EventArgs e)
         {
-            // Проверка на пустые поля
-            if (string.IsNullOrWhiteSpace(textBoxStateNumber.Text))
+            // Валидация обязательных полей
+            if (string.IsNullOrWhiteSpace(textBoxStateNumber.Text) ||
+                string.IsNullOrWhiteSpace(textBoxBrand.Text) ||
+                string.IsNullOrWhiteSpace(textBoxModel.Text) ||
+                string.IsNullOrWhiteSpace(textBoxCapacity.Text) ||
+                string.IsNullOrWhiteSpace(textBoxYear.Text) ||
+                string.IsNullOrWhiteSpace(textBoxYearOfRepair.Text) ||
+                string.IsNullOrWhiteSpace(textBoxMilleage.Text))
             {
-                MessageBox.Show("Государственный номер не может быть пустым.", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Все поля обязательны для заполнения.", "Ошибка");
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(textBoxBrand.Text))
+            // Парсинг числовых значений
+            if (!int.TryParse(textBoxCapacity.Text, out int capacity) ||
+                !int.TryParse(textBoxYear.Text, out int year) ||
+                !int.TryParse(textBoxYearOfRepair.Text, out int repairYear) ||
+                !int.TryParse(textBoxMilleage.Text, out int mileage))
             {
-                MessageBox.Show("Марка автобуса не может быть пустой.", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Некорректные числовые значения.", "Ошибка");
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(textBoxModel.Text))
-            {
-                MessageBox.Show("Модель автобуса не может быть пустой.", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(textBoxCapacity.Text))
-            {
-                MessageBox.Show("Вместимость не может быть пустой.", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(textBoxYear.Text))
-            {
-                MessageBox.Show("Год выпуска не может быть пустым.", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(textBoxYearOfRepair.Text))
-            {
-                MessageBox.Show("Год капитального ремонта не может быть пустым.", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(textBoxMilleage.Text))
-            {
-                MessageBox.Show("Пробег не может быть пустым.", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            // Проверка числовых значений
-            if (!int.TryParse(textBoxCapacity.Text, out int capacity) || capacity <= 0)
-            {
-                MessageBox.Show("Вместимость должна быть положительным числом.", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            if (!int.TryParse(textBoxYear.Text, out int year) || year < Bus.Constants.MinYear || year > DateTime.Now.Year)
-            {
-                MessageBox.Show($"Год выпуска должен быть числом между {Bus.Constants.MinYear} и {DateTime.Now.Year}.", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            if (!int.TryParse(textBoxYearOfRepair.Text, out int repairYear) || repairYear < Bus.Constants.MinYear || repairYear > DateTime.Now.Year)
-            {
-                MessageBox.Show($"Год капитального ремонта должен быть числом между {Bus.Constants.MinYear} и {DateTime.Now.Year}.", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            if (!int.TryParse(textBoxMilleage.Text, out int mileage) || mileage < 0)
-            {
-                MessageBox.Show("Пробег должен быть неотрицательным числом.", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            // Проверка логики годов
+            // Логические проверки
             if (year > repairYear)
             {
-                MessageBox.Show("Год выпуска не может быть больше года капитального ремонта.", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Год выпуска не может быть больше года ремонта.", "Ошибка");
                 return;
-            }
-
-            // Проверка изображения
-            if (pictureBoxBusImage.Image == null)
-            {
-                DialogResult result = MessageBox.Show("Изображение автобуса не добавлено. Продолжить сохранение?", "Предупреждение",
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-                if (result == DialogResult.No)
-                {
-                    return;
-                }
             }
 
             string stateNumber = textBoxStateNumber.Text.Trim();
 
             try
             {
-                if (_Bus == null)
+                if (_Bus == null) // Добавление нового автобуса
                 {
-                    // Проверка на дубликат государственного номера
-                    if (_BusFleet.Buses.Any(bus => bus.StateNumber.Equals(stateNumber, StringComparison.OrdinalIgnoreCase)))
+                    // Проверка уникальности госномера
+                    if (_BusFleet.Buses.Any(b => b.StateNumber.Equals(stateNumber, StringComparison.OrdinalIgnoreCase)))
                     {
-                        MessageBox.Show("Автобус с таким государственным номером уже существует.", "Ошибка",
-                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Автобус с таким госномером уже существует.", "Ошибка");
                         return;
                     }
 
-                    // Создание и добавление автобуса
                     Bus bus = new Bus(
                         stateNumber,
                         textBoxBrand.Text.Trim(),
@@ -195,16 +126,12 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
                         year,
                         repairYear,
                         mileage,
-                        pictureBoxBusImage.Image != null ? pictureBoxBusImage.Name : string.Empty
+                        pictureBoxBusImage.Tag?.ToString() ?? string.Empty
                     );
 
                     _BusFleet.Buses.Add(bus);
-
-                    MessageBox.Show("Автобус успешно добавлен!", "Успех",
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-             }
-                else
+                }
+                else // Редактирование существующего
                 {
                     _Bus.StateNumber = stateNumber;
                     _Bus.Brand = textBoxBrand.Text.Trim();
@@ -213,276 +140,104 @@ namespace CourseWork_3sem_Menu.Forms.EditForms
                     _Bus.Year = year;
                     _Bus.YearOfMajorRepair = repairYear;
                     _Bus.Mileage = mileage;
-                    _Bus.Photo = pictureBoxBusImage.Image != null ? pictureBoxBusImage.Name : string.Empty;
-                    MessageBox.Show("Автобус успешно изменен!", "Успех",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
-
+                    _Bus.Photo = pictureBoxBusImage.Tag?.ToString() ?? string.Empty;
                 }
 
-                textBoxStateNumber.Clear();
-                textBoxBrand.Clear();
-                textBoxModel.Clear();
-                textBoxCapacity.Clear();
-                textBoxYear.Clear();
-                textBoxYearOfRepair.Clear();
-                textBoxMilleage.Clear();
-                pictureBoxBusImage.Image = null;
-                textBoxStateNumber.Focus();
-
-                this.parentForm.LoadBusesFleet();
-                this.parentForm.BringToFront();
-                this.parentForm.Show();
-                this.parentForm.panelBusesMenuTitle.Show();
+                // Обновление родительской формы
+                parentForm.LoadBusesFleet();
+                parentForm.panelBusesMenuTitle.Show();
                 this.Close();
-
-
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при сохранении автобуса: {ex.Message}", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка");
             }
-
         }
 
-
+        // Отмена изменений
         private void buttonDisChanges_Click(object sender, EventArgs e)
         {
-
-            this.parentForm.LoadBusesFleet();
-            this.parentForm.BringToFront();
-            this.parentForm.Show();
-            this.parentForm.panelBusesMenuTitle.Show();
+            parentForm.LoadBusesFleet();
+            parentForm.panelBusesMenuTitle.Show();
             this.Close();
-
         }
+
+        // Обработчики ввода для валидации
 
         private void textBoxCapacity_KeyPress(object sender, KeyPressEventArgs e)
         {
-            System.Windows.Forms.TextBox textBox = (System.Windows.Forms.TextBox)sender;
-            if (char.IsControl(e.KeyChar))
-            {
-                return;
-            }
-
-            // Запрещаем все, кроме цифр
-            if (!char.IsDigit(e.KeyChar))
-            {
+            // Разрешаем только цифры до максимальной вместимости
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
                 e.Handled = true;
-                return;
-            }
 
-            // Запрещаем первый ноль (опционально)
-            if (e.KeyChar == '0' && textBox.Text.Length == 0)
-            {
-                e.Handled = true;
-                return;
-            }
-
-            // Ограничение максимального значения
-            string newText = textBox.Text + e.KeyChar;
+            string newText = textBoxCapacity.Text + e.KeyChar;
             if (int.TryParse(newText, out int result) && result > Bus.Constants.MaxCapacity)
-            {
                 e.Handled = true;
-            }
         }
 
         private void textBoxStateNumber_KeyPress(object sender, KeyPressEventArgs e)
         {
+            // Валидация формата госномера: буква-цифра-цифра-цифра-буква-буква-цифра-цифра-цифра
             System.Windows.Forms.TextBox textBox = (System.Windows.Forms.TextBox)sender;
+            int pos = textBox.Text.Length;
 
-            if (char.IsControl(e.KeyChar))
-            {
-                return;
-            }
+            if (char.IsControl(e.KeyChar)) return;
 
-            if (!char.IsDigit(e.KeyChar) && !char.IsLetter(e.KeyChar))
+            // Определяем разрешенные символы для каждой позиции
+            bool isValid = pos switch
             {
-                e.Handled = true;
-                return;
-            }
+                0 or 4 or 5 => Bus.AllowedStateLetters.Contains(e.KeyChar), // Буквы
+                1 or 2 or 3 or 6 or 7 or 8 => char.IsDigit(e.KeyChar), // Цифры
+                _ => false // Не должно быть больше 9 символов
+            };
 
-            if (textBox.Text.Length == 0 && !Bus.AllowedStateLetters.Contains(e.KeyChar))
-            {
-                e.Handled = true;
-                return;
-            }
-            if (char.IsLetter(e.KeyChar) && textBox.Text.Length == 1)
-            {
-
-                e.Handled = true;
-                return;
-            }
-            if (char.IsLetter(e.KeyChar) && textBox.Text.Length == 2)
-            {
-                e.Handled = true;
-                return;
-            }
-            if (char.IsLetter(e.KeyChar) && textBox.Text.Length == 3)
-            {
-                e.Handled = true;
-                return;
-            }
-            if (textBox.Text.Length == 4 && !Bus.AllowedStateLetters.Contains(e.KeyChar))
-            {
-                e.Handled = true;
-                return;
-            }
-            if (textBox.Text.Length == 5 && !Bus.AllowedStateLetters.Contains(e.KeyChar))
-            {
-                e.Handled = true;
-                return;
-            }
-            if (char.IsLetter(e.KeyChar) && textBox.Text.Length == 6)
-            {
-                e.Handled = true;
-                return;
-            }
-            if (char.IsLetter(e.KeyChar) && textBox.Text.Length == 7)
-            {
-                e.Handled = true;
-                return;
-            }
-            if (char.IsLetter(e.KeyChar) && textBox.Text.Length == 8)
-            {
-                e.Handled = true;
-                return;
-            }
-
-        }
-
-        private void textBoxBrand_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (char.IsControl(e.KeyChar))
-            {
-                return;
-            }
-            if (!char.IsDigit(e.KeyChar) && !char.IsLetter(e.KeyChar))
-            {
-                e.Handled = true;
-                return;
-            }
-        }
-
-        private void textBoxModel_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (char.IsControl(e.KeyChar))
-            {
-                return;
-            }
-            if (!char.IsDigit(e.KeyChar) && !char.IsLetter(e.KeyChar))
-            {
-                e.Handled = true;
-                return;
-            }
+            e.Handled = !isValid;
         }
 
         private void textBoxYear_KeyPress(object sender, KeyPressEventArgs e)
         {
-            System.Windows.Forms.TextBox textBox = (System.Windows.Forms.TextBox)sender;
-
-            if (char.IsControl(e.KeyChar))
-                return;
-
-            if (!char.IsDigit(e.KeyChar))
-            {
+            // Ввод года выпуска с проверкой диапазона
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
                 e.Handled = true;
-                return;
-            }
 
-            if (e.KeyChar == '0' && textBox.Text.Length == 0)
-            {
+            string newText = textBoxYear.Text + e.KeyChar;
+            if (int.TryParse(newText, out int result) && result > DateTime.Now.Year)
                 e.Handled = true;
-                return;
-            }
-
-            string newText = textBox.Text + e.KeyChar;
-            if (int.TryParse(newText, out int result))
-            {
-                int currentYear = DateTime.Now.Year;
-
-                if (newText.Length == 4 && result < Bus.Constants.MinYear)
-                {
-                    e.Handled = true;
-                    return;
-                }
-                // Проверяем только максимальное значение (текущий год)
-                if (result > currentYear)
-                {
-                    e.Handled = true;
-                    return;
-                }
-            }
-        }
-
-        private void textBoxYearOfRepair_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            System.Windows.Forms.TextBox textBox = (System.Windows.Forms.TextBox)sender;
-
-            if (char.IsControl(e.KeyChar))
-                return;
-
-            if (!char.IsDigit(e.KeyChar))
-            {
-                e.Handled = true;
-                return;
-            }
-
-            if (e.KeyChar == '0' && textBox.Text.Length == 0)
-            {
-                e.Handled = true;
-                return;
-            }
-
-            string newText = textBox.Text + e.KeyChar;
-            if (int.TryParse(newText, out int result))
-            {
-                int currentYear = DateTime.Now.Year;
-
-                if (newText.Length == 4 && result < Bus.Constants.MinYear)
-                {
-                    e.Handled = true;
-                    return;
-                }
-                // Только проверка максимума
-                if (result > currentYear)
-                {
-                    e.Handled = true;
-                    return;
-                }
-            }
         }
 
         private void textBoxMilleage_KeyPress(object sender, KeyPressEventArgs e)
         {
-            System.Windows.Forms.TextBox textBox = (System.Windows.Forms.TextBox)sender;
-            if (char.IsControl(e.KeyChar))
-            {
-                return;
-            }
-
-            // Запрещаем все, кроме цифр
-            if (!char.IsDigit(e.KeyChar))
-            {
+            // Ввод пробега с проверкой максимального значения
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
                 e.Handled = true;
-                return;
-            }
 
-            // Запрещаем первый ноль (опционально)
-            if (e.KeyChar == '0' && textBox.Text.Length == 0)
-            {
-                e.Handled = true;
-                return;
-            }
-
-            // Ограничение максимального значения
-            string newText = textBox.Text + e.KeyChar;
+            string newText = textBoxMilleage.Text + e.KeyChar;
             if (int.TryParse(newText, out int result) && result > Bus.Constants.MaxMileage)
-            {
                 e.Handled = true;
-            }
-
         }
 
+        // Аналогичные обработчики для других полей...
+        private void textBoxBrand_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Разрешаем буквы, цифры и пробелы
+            if (!char.IsControl(e.KeyChar) && !char.IsLetterOrDigit(e.KeyChar) && e.KeyChar != ' ')
+                e.Handled = true;
+        }
+
+        private void textBoxModel_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsLetterOrDigit(e.KeyChar) && e.KeyChar != ' ')
+                e.Handled = true;
+        }
+
+        private void textBoxYearOfRepair_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+                e.Handled = true;
+
+            string newText = textBoxYearOfRepair.Text + e.KeyChar;
+            if (int.TryParse(newText, out int result) && result > DateTime.Now.Year)
+                e.Handled = true;
+        }
     }
 }
