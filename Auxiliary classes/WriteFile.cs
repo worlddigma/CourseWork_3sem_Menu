@@ -81,7 +81,7 @@ namespace CourseWork_3sem
                     {
                         VolumeOfTransportationWrite.WriteLine($"{completedTransportation.RouteCode};{completedTransportation.DriverCode};" +
                             $"{completedTransportation.Bus};{completedTransportation.TransportationDate.Date};{completedTransportation.SoldTickets};" +
-                            $"{completedTransportation.TotalRevenue}");
+                            $"{completedTransportation.TotalRevenue}[");
                     }
                 }
             }

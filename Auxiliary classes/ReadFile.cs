@@ -71,7 +71,7 @@ namespace CourseWork_3sem
                     string text = VolumeOfTransportationRead.ReadToEnd();
                     if (!string.IsNullOrWhiteSpace(text))
                     {
-                        string[] lines = text.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                        string[] lines = text.Split('[', StringSplitOptions.RemoveEmptyEntries);
                         foreach (var line in lines)
                         {
                             if (!string.IsNullOrWhiteSpace(line.Trim()))
@@ -85,8 +85,6 @@ namespace CourseWork_3sem
             catch (Exception ex)
             {
                 Console.WriteLine($"Ошибка при чтении файлов: {ex.Message}");
-                // Или используйте MessageBox для WinForms
-                // MessageBox.Show($"Ошибка при чтении файлов: {ex.Message}", "Ошибка");
             }
         }
 
